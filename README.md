@@ -15,13 +15,13 @@ usage: java -jar a.jar [-b <arg>] [-c <arg>] [-C <arg>] [-e <arg>] [-f
                          all messages.
  -C,--copy-queue <arg>   Copy all messages from this to target
  -e,--encoding <arg>     Encoding of input file data. Default UTF-8
- -f,--find <arg>         Search for messages in queue with this value in
-                         payload. Use with browse.
+ -f,--find <arg>         Search for messages in queue with this value in 
+                         payload. Use with browse. (Experimental)
  -g,--get                Get a message from destination
  -H <property=value>     use value for given property. Can be used several
                          times.
  -j,--jms-headers        Print JMS headers
- -M,--move-queue <arg>   Move all messages from this to target
+ -M,--move-queue <arg>   Move all messages from this to target  (Experimental)
  -n,--non-persistent     Set message to non persistent.
  -o,--output <arg>       file to write payload to. If multiple messages, a
                          -1.<ext> will be added to the file. BytesMessage
