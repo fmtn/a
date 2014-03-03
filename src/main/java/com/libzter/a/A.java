@@ -131,7 +131,7 @@ public class A {
 
 	private void executeMove(CommandLine cmdLine) throws JMSException, UnsupportedEncodingException, IOException {
 		Queue tq = tsess.createQueue(cmdLine.getArgs()[0]);
-		Queue q =  tsess.createQueue(cmdLine.getOptionValue("C")); // Source
+		Queue q =  tsess.createQueue(cmdLine.getOptionValue("M")); // Source
 		MessageConsumer mq = null;
 		MessageProducer mp = tsess.createProducer(tq);
 		if( cmdLine.hasOption("s")){ // Selectors
@@ -142,7 +142,7 @@ public class A {
 		int count = Integer.parseInt(cmdLine.getOptionValue("c","0"));
 		int i = 0, j = 0;
 		while(i < count || count == 0 ){
-			Message msg = mq.receive();
+			Message msg = mq.receive(100L);
 			if( msg == null){
 				break;
 			}else{
@@ -165,7 +165,7 @@ public class A {
 				++i;
 			}
 		}
-		output(j + " msgs moved from " + cmdLine.getArgs()[0] + " to " + cmdLine.getOptionValue("C"));
+		output(j + " msgs moved from " + cmdLine.getArgs()[0] + " to " + cmdLine.getOptionValue("M"));
 	}
 
 	private void executeCopy(CommandLine cmdLine) throws JMSException {
