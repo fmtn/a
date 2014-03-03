@@ -304,9 +304,9 @@ public class A {
 			output("  JMSPriority: " + msg.getJMSPriority());
 			output("  JMSTimestamp: " + timestampToString(msg.getJMSTimestamp()));
 			output("  JMSType: " + msg.getJMSType());
-			output("  JMSDestination: " + msg.getJMSDestination() != null ? msg.getJMSDestination().toString() : "Not set");
+			output("  JMSDestination: " + (msg.getJMSDestination() != null ? msg.getJMSDestination().toString() : "Not set"));
 			output("  JMSRedelivered: " + Boolean.toString(msg.getJMSRedelivered()));
-			output("  JMSReplyTo: " + msg.getJMSReplyTo() != null ? msg.getJMSReplyTo().toString() : "Not set");
+			output("  JMSReplyTo: " + (msg.getJMSReplyTo() != null ? msg.getJMSReplyTo().toString() : "Not set"));
 		} catch (JMSException e) {
 			// nothing to do here. just ignore.
 			logger.debug("Cannot print JMS headers."  + e.getMessage());
