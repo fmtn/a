@@ -32,6 +32,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.PosixParser;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +44,7 @@ public class A {
 	private static final Logger logger = LoggerFactory.getLogger(A.class);
 	protected ActiveMQConnectionFactory cf;
 	protected Connection conn;
-	protected Session sess;
+	protected Session sess,tsess;
 	protected CommandLine cmdLine;
 	
 	public static void main(String[] args) throws ParseException, InterruptedException{
@@ -63,6 +64,10 @@ public class A {
 		opts.addOption("o","output",true,"file to write payload to. If multiple messages, a -1.<ext> will be added to the file. BytesMessage will be written as-is, TextMessage will be written in UTF-8");
 		opts.addOption("c","count",true,"A number of messages to browse,get or put (put will put the same message <count> times). 0 means all messages.");
 		opts.addOption("j","jms-headers",false,"Print JMS headers");
+		opts.addOption("C","copy-queue",true,"Copy all messages from this to target");
+		opts.addOption("M","move-queue",true,"Move all messages from this to target");
+		opts.addOption("f", "find", true, "Search for messages in queue with this value in payload. Use with browse.");
+		opts.addOption("s","selector",true,"Browse or get with selector");
 		@SuppressWarnings("static-access")
 		Option property = OptionBuilder.withArgName("property=value" )
                 .hasArgs(2)
@@ -78,7 +83,7 @@ public class A {
 			System.exit(0);
 		}
 		
-		CommandLineParser cmdParser = new org.apache.commons.cli.PosixParser();
+		CommandLineParser cmdParser = new PosixParser();
 		
 		try {
 			cmdLine = cmdParser.parse(opts, args);
@@ -90,8 +95,12 @@ public class A {
 			
 			if( cmdLine.hasOption("g")){
 				executeGet(cmdLine);
-			}else if(cmdLine.hasOption("p")){
+			}else if(cmdLine.hasOption("p") ){
 				executePut(cmdLine);
+			}else if( cmdLine.hasOption("C")){
+				executeCopy(cmdLine);
+			}else if( cmdLine.hasOption("M")){
+				executeMove(cmdLine);
 			}else{
 				executeBrowse(cmdLine);
 			}
@@ -120,6 +129,84 @@ public class A {
 		logger.debug("At the end of the road");
 	}
 
+	private void executeMove(CommandLine cmdLine) throws JMSException, UnsupportedEncodingException, IOException {
+		Queue tq = tsess.createQueue(cmdLine.getArgs()[0]);
+		Queue q =  tsess.createQueue(cmdLine.getOptionValue("C")); // Source
+		MessageConsumer mq = null;
+		MessageProducer mp = tsess.createProducer(tq);
+		if( cmdLine.hasOption("s")){ // Selectors
+			mq = tsess.createConsumer(q,cmdLine.getOptionValue("s"));
+		}else{
+			mq = tsess.createConsumer(q);
+		}
+		int count = Integer.parseInt(cmdLine.getOptionValue("c","0"));
+		int i = 0, j = 0;
+		while(i < count || count == 0 ){
+			Message msg = mq.receive();
+			if( msg == null){
+				break;
+			}else{
+				// if search is enabled
+				if( cmdLine.hasOption("f")){
+					if( msg instanceof TextMessage){
+						String haystack = ((TextMessage)msg).getText();
+						String needle = cmdLine.getOptionValue("f");
+						if( haystack != null && haystack.contains(needle)){
+							mp.send(msg);
+							tsess.commit();
+							++j;
+						}
+					}
+				}else{
+					mp.send(msg);
+					tsess.commit();
+					++j;
+				}
+				++i;
+			}
+		}
+		output(j + " msgs moved from " + cmdLine.getArgs()[0] + " to " + cmdLine.getOptionValue("C"));
+	}
+
+	private void executeCopy(CommandLine cmdLine) throws JMSException {
+		Queue tq = sess.createQueue(cmdLine.getArgs()[0]);
+		Queue q =  sess.createQueue(cmdLine.getOptionValue("C")); // Source
+		QueueBrowser qb = null;
+		MessageProducer mp = sess.createProducer(tq);
+		if( cmdLine.hasOption("s")){ // Selectors
+			qb = sess.createBrowser(q,cmdLine.getOptionValue("s"));
+		}else{
+			qb = sess.createBrowser(q);
+		}
+		int count = Integer.parseInt(cmdLine.getOptionValue("c","0"));
+		int i = 0, j = 0;
+		@SuppressWarnings("unchecked")
+		Enumeration<Message> en = qb.getEnumeration();
+		while((i < count || count == 0) && en.hasMoreElements()){
+			Message msg = en.nextElement();
+			if( msg == null){
+				break;
+			}else{
+				// if search is enabled
+				if( cmdLine.hasOption("f")){
+					if( msg instanceof TextMessage){
+						String haystack = ((TextMessage)msg).getText();
+						String needle = cmdLine.getOptionValue("f");
+						if( haystack != null && haystack.contains(needle)){
+							mp.send(msg);
+							++j;
+						}
+					}
+				}else{
+					mp.send(msg);
+					++j;
+				}
+				++i;
+			}
+		}
+		output(j + " msgs copied from " + cmdLine.getArgs()[0] + " to " + cmdLine.getOptionValue("C"));
+	}
+
 	private void connect(String optionValue,String user, String password) throws JMSException {
 		cf = new ActiveMQConnectionFactory();
 		if( user != null && password != null){
@@ -129,12 +216,18 @@ public class A {
 		}
 		
 		sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+		tsess = conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
 		conn.start();
 	}
 
 	private void executeGet(CommandLine cmdLine) throws JMSException, UnsupportedEncodingException, IOException {
 		Queue q = sess.createQueue(cmdLine.getArgs()[0]);
-		MessageConsumer mq = sess.createConsumer(q);
+		MessageConsumer mq = null;
+		if( cmdLine.hasOption("s")){ // Selectors
+			mq = sess.createConsumer(q,cmdLine.getOptionValue("s"));
+		}else{
+			mq = sess.createConsumer(q);
+		}
 		int count = Integer.parseInt(cmdLine.getOptionValue("c","1"));
 		int i = 0;
 		while(i < count || i == 0 ){
@@ -218,7 +311,14 @@ public class A {
 
 	private void executeBrowse(CommandLine cmdLine) throws JMSException, UnsupportedEncodingException, IOException {
 		Queue q = sess.createQueue(cmdLine.getArgs()[0]);
-		QueueBrowser qb = sess.createBrowser(q);
+		QueueBrowser qb = null;
+		// Selector aware?
+		if( cmdLine.hasOption("s")){
+			qb = sess.createBrowser(q,cmdLine.getOptionValue("s"));
+		}else{
+			qb = sess.createBrowser(q);
+		}
+		
 		@SuppressWarnings("rawtypes")
 		Enumeration en = qb.getEnumeration();
 		int count = Integer.parseInt(cmdLine.getOptionValue("c","0"));
@@ -226,7 +326,18 @@ public class A {
 		while(en.hasMoreElements() && (i < count || i == 0 )){
 			Object obj = en.nextElement();
 			Message msg = (Message)obj;
-			outputMessage(msg,cmdLine.hasOption("j"));
+			if( cmdLine.hasOption("f")){
+				String needle = cmdLine.getOptionValue("f");
+				// need to search for some payload value
+				if( msg instanceof TextMessage){
+					String haystack = ((TextMessage)msg).getText();
+					if(haystack.contains(needle)){
+						outputMessage(msg,cmdLine.hasOption("j"));
+					}
+				}
+			}else{
+				outputMessage(msg,cmdLine.hasOption("j"));
+			}
 			++i;
 		}
 	}
