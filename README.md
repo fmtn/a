@@ -6,30 +6,33 @@ A is an ActiveMQ testing/admin utility
 Used to send, browse and put messages on queues.
 
 ```
-Usage information.
-
-usage: java -jar a.jar [-b <arg>] [-c <arg>] [-e <arg>] [-g] [-H
-       <property=value>] [-j] [-n] [-o <arg>] [-p <arg>] [-r <arg>] [-t
-       <arg>]
- -b,--broker <arg>     URL to broker. defaults to: tcp://localhost:61616
- -c,--count <arg>      A number of messages to browse,get or put (put will
-                       put the same message <count> times). 0 means all
-                       messages.
- -e,--encoding <arg>   Encoding of input file data. Default UTF-8
- -g,--get              Get a message from destination
- -H <property=value>   use value for given property. Can be used several
-                       times.
- -j,--jms-headers      Print JMS headers
- -n,--non-persistent   Set message to non persistent.
- -o,--output <arg>     file to write payload to. If multiple messages, a
-                       -1.<ext> will be added to the file. BytesMessage
-                       will be written as-is, TextMessage will be written
-                       in UTF-8
- -p,--put <arg>        Put a message. Specify data. if starts with @, a
-                       file is assumed and loaded
- -r,--reply-to <arg>   Set reply to destination, i.e. queue:reply
- -t,--type <arg>       Message type to put, [bytes, text] - defaults to
-                       text
+usage: java -jar a.jar [-b <arg>] [-c <arg>] [-C <arg>] [-e <arg>] [-f
+       <arg>] [-g] [-H <property=value>] [-j] [-M <arg>] [-n] [-o <arg>]
+       [-p <arg>] [-r <arg>] [-s <arg>] [-t <arg>]
+ -b,--broker <arg>       URL to broker. defaults to: tcp://localhost:61616
+ -c,--count <arg>        A number of messages to browse,get or put (put
+                         will put the same message <count> times). 0 means
+                         all messages.
+ -C,--copy-queue <arg>   Copy all messages from this to target
+ -e,--encoding <arg>     Encoding of input file data. Default UTF-8
+ -f,--find <arg>         Search for messages in queue with this value in
+                         payload. Use with browse.
+ -g,--get                Get a message from destination
+ -H <property=value>     use value for given property. Can be used several
+                         times.
+ -j,--jms-headers        Print JMS headers
+ -M,--move-queue <arg>   Move all messages from this to target
+ -n,--non-persistent     Set message to non persistent.
+ -o,--output <arg>       file to write payload to. If multiple messages, a
+                         -1.<ext> will be added to the file. BytesMessage
+                         will be written as-is, TextMessage will be
+                         written in UTF-8
+ -p,--put <arg>          Put a message. Specify data. if starts with @, a
+                         file is assumed and loaded
+ -r,--reply-to <arg>     Set reply to destination, i.e. queue:reply
+ -s,--selector <arg>     Browse or get with selector
+ -t,--type <arg>         Message type to put, [bytes, text] - defaults to
+                         text
 ```
 
 Example1. Put message with payload "foobar" to queue q on local broker:
