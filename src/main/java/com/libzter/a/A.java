@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.text.Format;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -59,6 +62,8 @@ public class A {
 		opts.addOption("r","reply-to",true,"Set reply to destination, i.e. queue:reply");
 		opts.addOption("o","output",true,"file to write payload to. If multiple messages, a -1.<ext> will be added to the file. BytesMessage will be written as-is, TextMessage will be written in UTF-8");
 		opts.addOption("c","count",true,"A number of messages to browse,get or put (put will put the same message <count> times). 0 means all messages.");
+		opts.addOption("j","jms-headers",false,"Print JMS headers");
+		@SuppressWarnings("static-access")
 		Option property = OptionBuilder.withArgName("property=value" )
                 .hasArgs(2)
                 .withValueSeparator()
@@ -133,12 +138,12 @@ public class A {
 		int count = Integer.parseInt(cmdLine.getOptionValue("c","1"));
 		int i = 0;
 		while(i < count || i == 0 ){
-			Message msg = mq.receive(100L);
+			Message msg = mq.receive();
 			if( msg == null){
-				System.out.println("No message on queue");
+				System.out.println("Null message");
 				break;
 			}else{
-				outputMessage(msg);
+				outputMessage(msg,cmdLine.hasOption("j"));
 				++i;
 			}
 		}
@@ -221,13 +226,16 @@ public class A {
 		while(en.hasMoreElements() && (i < count || i == 0 )){
 			Object obj = en.nextElement();
 			Message msg = (Message)obj;
-			outputMessage(msg);
+			outputMessage(msg,cmdLine.hasOption("j"));
 			++i;
 		}
 	}
 
-	private void outputMessage(Message msg) throws JMSException, UnsupportedEncodingException, IOException {
+	private void outputMessage(Message msg,boolean printJMSHeaders) throws JMSException, UnsupportedEncodingException, IOException {
 		output("-----------------");
+		if( printJMSHeaders ){
+			outputHeaders(msg);
+		}
 		outputProperties(msg);
 		// Output to file?
 		FileOutputStream fos = null;
@@ -284,6 +292,33 @@ public class A {
 			return f;
 		}
 	}
+	
+	private void outputHeaders(Message msg){
+		output("Message Headers");
+		try {
+		    String deliveryMode = msg.getJMSDeliveryMode() == DeliveryMode.PERSISTENT?"persistent":"non-persistent";
+		    output("  JMSCorrelationID: " + msg.getJMSCorrelationID());
+			output("  JMSExpiration: " + timestampToString(msg.getJMSExpiration()));
+			output("  JMSDeliveryMode: " + deliveryMode);
+			output("  JMSMessageID: " + msg.getJMSMessageID());
+			output("  JMSPriority: " + msg.getJMSPriority());
+			output("  JMSTimestamp: " + timestampToString(msg.getJMSTimestamp()));
+			output("  JMSType: " + msg.getJMSType());
+			output("  JMSDestination: " + msg.getJMSDestination().toString());
+			output("  JMSRedelivered: " + Boolean.toString(msg.getJMSRedelivered()));
+			output("  JMSReplyTo: " + msg.getJMSReplyTo().toString());
+		} catch (JMSException e) {
+			// nothing to do here. just ignore.
+			logger.debug("Cannot print JMS headers."  + e.getMessage());
+		}
+	}
+	
+	private String timestampToString(long timestamp){
+		Date date = new Date(timestamp);
+	    Format format = new SimpleDateFormat("yyyy MM dd HH:mm:ss");
+	    String timeString =  format.format(date).toString();
+	    return timeString;
+	}
 
 	private void outputProperties(Message msg) throws JMSException {
 		output("Message Properties");
@@ -292,7 +327,7 @@ public class A {
 		while(en.hasMoreElements()){
 			String name = en.nextElement();
 			Object property = msg.getObjectProperty(name);
-			output(name + ": " + property.toString());
+			output("  " + name + ": " + property.toString());
 		}
 	}
 	
