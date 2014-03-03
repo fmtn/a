@@ -135,7 +135,7 @@ public class A {
 		while(i < count || i == 0 ){
 			Message msg = mq.receive(100L);
 			if( msg == null){
-				System.out.println("Null message");
+				System.out.println("No message on queue");
 				break;
 			}else{
 				outputMessage(msg);
