@@ -133,7 +133,7 @@ public class A {
 		int count = Integer.parseInt(cmdLine.getOptionValue("c","1"));
 		int i = 0;
 		while(i < count || i == 0 ){
-			Message msg = mq.receive();
+			Message msg = mq.receive(100L);
 			if( msg == null){
 				System.out.println("Null message");
 				break;
