@@ -67,9 +67,9 @@ Example7. Put file foo.bar as text message on queue q, with encoding EBCDIC CP03
 #Make the jar runnable from shell as in examples:
 1. copy the jar target/a-VERSION-with-dependencies.jar to someplace. i.e. ~/bin/
 2. create a file called "a" on your path (~/bin/a or what have you)
-  
-    #!/bin/sh
-    java -jar ~/bin/a-1.0.0-SNAPSHOT-jar-with-dependencies.jar "$@"
-
+```  
+#!/bin/sh
+java -jar ~/bin/a-1.0.0-SNAPSHOT-jar-with-dependencies.jar "$@"
+```
 3. chmod +x a
 4. Run a from any place.
