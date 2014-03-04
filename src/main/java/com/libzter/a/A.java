@@ -140,32 +140,18 @@ public class A {
 			mq = tsess.createConsumer(q);
 		}
 		int count = Integer.parseInt(cmdLine.getOptionValue("c","0"));
-		int i = 0, j = 0;
+		int i = 0;
 		while(i < count || count == 0 ){
 			Message msg = mq.receive(100L);
 			if( msg == null){
 				break;
 			}else{
-				// if search is enabled
-				if( cmdLine.hasOption("f")){
-					if( msg instanceof TextMessage){
-						String haystack = ((TextMessage)msg).getText();
-						String needle = cmdLine.getOptionValue("f");
-						if( haystack != null && haystack.contains(needle)){
-							mp.send(msg);
-							tsess.commit();
-							++j;
-						}
-					}
-				}else{
-					mp.send(msg);
-					tsess.commit();
-					++j;
-				}
+				mp.send(msg);
+				tsess.commit();
 				++i;
 			}
 		}
-		output(j + " msgs moved from " + cmdLine.getArgs()[0] + " to " + cmdLine.getOptionValue("M"));
+		output(i + " msgs moved from " + cmdLine.getArgs()[0] + " to " + cmdLine.getOptionValue("M"));
 	}
 
 	private void executeCopy(CommandLine cmdLine) throws JMSException {
@@ -265,6 +251,7 @@ public class A {
 			}else{
 				BytesMessage bytesMsg = sess.createBytesMessage();
 				bytesMsg.writeBytes(bytes);
+				outMsg = bytesMsg;
 			}
 		}else{
 			TextMessage textMsg = sess.createTextMessage(data);
@@ -323,7 +310,7 @@ public class A {
 		Enumeration en = qb.getEnumeration();
 		int count = Integer.parseInt(cmdLine.getOptionValue("c","0"));
 		int i = 0;
-		while(en.hasMoreElements() && (i < count || i == 0 )){
+		while(en.hasMoreElements() && (i < count || count == 0 )){
 			Object obj = en.nextElement();
 			Message msg = (Message)obj;
 			if( cmdLine.hasOption("f")){
