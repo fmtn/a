@@ -82,6 +82,6 @@ java -jar ~/bin/a-1.0.0-SNAPSHOT-jar-with-dependencies.jar "$@"
 2. create a file called "a.bat" on your path, i.e. c:\bin
 ```
 @echo off
-java -jar c:\bin\a-1.0.0-SNAPSHOT-jar-with-dependencies.jar %1
+java -jar c:\bin\a-1.0.0-SNAPSHOT-jar-with-dependencies.jar %*
 ```
 3. Run from any place.
