@@ -68,6 +68,7 @@ public class A {
 		opts.addOption("M","move-queue",true,"Move all messages from this to target");
 		opts.addOption("f", "find", true, "Search for messages in queue with this value in payload. Use with browse.");
 		opts.addOption("s","selector",true,"Browse or get with selector");
+		opts.addOption("w","wait",true,"Time to wait on get operation. Default 50. 0 equals infinity");
 		@SuppressWarnings("static-access")
 		Option property = OptionBuilder.withArgName("property=value" )
                 .hasArgs(2)
@@ -215,9 +216,10 @@ public class A {
 			mq = sess.createConsumer(q);
 		}
 		int count = Integer.parseInt(cmdLine.getOptionValue("c","1"));
+		long wait = Long.parseLong(cmdLine.getOptionValue("w","50"));
 		int i = 0;
 		while(i < count || i == 0 ){
-			Message msg = mq.receive();
+			Message msg = mq.receive(wait);
 			if( msg == null){
 				System.out.println("Null message");
 				break;

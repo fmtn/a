@@ -8,20 +8,20 @@ Used to send, browse and put messages on queues.
 ```
 usage: java -jar a.jar [-b <arg>] [-c <arg>] [-C <arg>] [-e <arg>] [-f
        <arg>] [-g] [-H <property=value>] [-j] [-M <arg>] [-n] [-o <arg>]
-       [-p <arg>] [-r <arg>] [-s <arg>] [-t <arg>]
+       [-p <arg>] [-r <arg>] [-s <arg>] [-t <arg>] [-w <arg>]
  -b,--broker <arg>       URL to broker. defaults to: tcp://localhost:61616
  -c,--count <arg>        A number of messages to browse,get or put (put
                          will put the same message <count> times). 0 means
                          all messages.
  -C,--copy-queue <arg>   Copy all messages from this to target
  -e,--encoding <arg>     Encoding of input file data. Default UTF-8
- -f,--find <arg>         Search for messages in queue with this value in 
-                         payload. Use with browse. (Experimental)
+ -f,--find <arg>         Search for messages in queue with this value in
+                         payload. Use with browse.
  -g,--get                Get a message from destination
  -H <property=value>     use value for given property. Can be used several
                          times.
  -j,--jms-headers        Print JMS headers
- -M,--move-queue <arg>   Move all messages from this to target  (Experimental)
+ -M,--move-queue <arg>   Move all messages from this to target
  -n,--non-persistent     Set message to non persistent.
  -o,--output <arg>       file to write payload to. If multiple messages, a
                          -1.<ext> will be added to the file. BytesMessage
@@ -33,6 +33,9 @@ usage: java -jar a.jar [-b <arg>] [-c <arg>] [-C <arg>] [-e <arg>] [-f
  -s,--selector <arg>     Browse or get with selector
  -t,--type <arg>         Message type to put, [bytes, text] - defaults to
                          text
+ -w,--wait <arg>         Time to wait on get operation. Default 50. 0
+                         equals infinity
+
 ```
 
 Example1. Put message with payload "foobar" to queue q on local broker:
