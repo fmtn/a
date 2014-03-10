@@ -194,8 +194,8 @@ public class A {
 		output(j + " msgs copied from " + cmdLine.getArgs()[0] + " to " + cmdLine.getOptionValue("C"));
 	}
 
-	private void connect(String optionValue,String user, String password) throws JMSException {
-		cf = new ActiveMQConnectionFactory();
+	private void connect(String url,String user, String password) throws JMSException {
+		cf = new ActiveMQConnectionFactory(url);
 		if( user != null && password != null){
 			conn = (Connection) cf.createConnection(user, password);
 		}else{
