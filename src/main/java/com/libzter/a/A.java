@@ -46,12 +46,12 @@ public class A {
 	protected Connection conn;
 	protected Session sess,tsess;
 	protected CommandLine cmdLine;
-	
+
 	public static void main(String[] args) throws ParseException, InterruptedException{
 		A a = new A();
 		a.run(args);
 	}
-	
+
 	public void run(String[] args) throws InterruptedException{
 		Options opts = new Options();
 		opts.addOption("b", "broker", true, "URL to broker. defaults to: tcp://localhost:61616");
@@ -69,31 +69,33 @@ public class A {
 		opts.addOption("f", "find", true, "Search for messages in queue with this value in payload. Use with browse.");
 		opts.addOption("s","selector",true,"Browse or get with selector");
 		opts.addOption("w","wait",true,"Time to wait on get operation. Default 50. 0 equals infinity");
+		opts.addOption("U","user",true,"Username to connect to broker");
+		opts.addOption("P","pass",true,"Password to connect to broker");
 		@SuppressWarnings("static-access")
 		Option property = OptionBuilder.withArgName("property=value" )
                 .hasArgs(2)
                 .withValueSeparator()
                 .withDescription( "use value for given property. Can be used several times." )
                 .create( "H" );
-		
+
 		opts.addOption(property);
-		
+
 		if( args.length == 0){
 			HelpFormatter helpFormatter = new HelpFormatter();
 			helpFormatter.printHelp("java -jar a.jar", opts, true);
 			System.exit(0);
 		}
-		
+
 		CommandLineParser cmdParser = new PosixParser();
-		
+
 		try {
 			cmdLine = cmdParser.parse(opts, args);
 			connect(cmdLine.getOptionValue("b", "tcp://localhost:61616"),
 					cmdLine.getOptionValue("user"),
 					cmdLine.getOptionValue("pass"));
-			
+
 			 long startTime = System.currentTimeMillis();
-			
+
 			if( cmdLine.hasOption("g")){
 				executeGet(cmdLine);
 			}else if(cmdLine.hasOption("p") ){
@@ -201,7 +203,7 @@ public class A {
 		}else{
 			conn = cf.createConnection();
 		}
-		
+
 		sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 		tsess = conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
 		conn.start();
@@ -259,17 +261,17 @@ public class A {
 			TextMessage textMsg = sess.createTextMessage(data);
 			outMsg = textMsg;
 		}
-		
+
 		MessageProducer mp = sess.createProducer(createDestination(cmdLine.getArgs()[0]));
 		if( cmdLine.hasOption("n")){;
 			mp.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 		}
 
-		// enrich headers.	
+		// enrich headers.
 		for(Entry<Object,Object> p : props.entrySet()){
 			outMsg.setObjectProperty((String)p.getKey(), p.getValue());
 		}
-		
+
 		if( cmdLine.hasOption("r")){
 			outMsg.setJMSReplyTo(createDestination(cmdLine.getOptionValue("r")));
 		}
@@ -307,7 +309,7 @@ public class A {
 		}else{
 			qb = sess.createBrowser(q);
 		}
-		
+
 		@SuppressWarnings("rawtypes")
 		Enumeration en = qb.getEnumeration();
 		int count = Integer.parseInt(cmdLine.getOptionValue("c","0"));
@@ -346,7 +348,7 @@ public class A {
 				fos = new FileOutputStream(file);
 			}
 		}
-		
+
 		if( msg instanceof TextMessage){
 			TextMessage txtMsg = (TextMessage)msg;
 			if( fos != null){
@@ -392,7 +394,7 @@ public class A {
 			return f;
 		}
 	}
-	
+
 	private void outputHeaders(Message msg){
 		output("Message Headers");
 		try {
@@ -412,7 +414,7 @@ public class A {
 			logger.debug("Cannot print JMS headers."  + e.getMessage());
 		}
 	}
-	
+
 	private String timestampToString(long timestamp){
 		Date date = new Date(timestamp);
 	    Format format = new SimpleDateFormat("yyyy MM dd HH:mm:ss");
@@ -430,13 +432,13 @@ public class A {
 			output("  " + name + ": " + property.toString());
 		}
 	}
-	
+
 	private void output(String... args){
 		for(String arg : args){
 			System.out.println(arg);
 		}
 	}
-	
+
 	final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
 	public String bytesToHex(byte[] bytes) {
 	    char[] hexChars = new char[bytes.length * 2];
