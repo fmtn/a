@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -40,12 +41,49 @@ import org.slf4j.LoggerFactory;
 /**
  * A - An ActiveMQ/JMS testing and admin tool
  */
-public class A {
+public class 
+A {
 	private static final Logger logger = LoggerFactory.getLogger(A.class);
 	protected ActiveMQConnectionFactory cf;
 	protected Connection conn;
 	protected Session sess,tsess;
 	protected CommandLine cmdLine;
+	
+	// Customizable output
+	protected AOutput output = new AOutput(){
+		public void output(Object... args) {
+			for(Object arg : args){
+				System.out.print(arg.toString());
+			}
+			System.out.println("");
+		}
+	};
+	
+	public static String CMD_BROKER = "b";
+	public static String CMD_GET = "g";
+	public static String CMD_PUT = "p";
+	public static String CMD_TYPE = "t";
+	public static String CMD_ENCODING = "e";
+	public static String CMD_NON_PERSISTENT = "n";
+	public static String CMD_REPLY_TO = "r";
+	public static String CMD_OUTPUT = "o";
+	public static String CMD_COUNT = "c";
+	public static String CMD_JMS_HEADERS = "j";
+	public static String CMD_COPY_QUEUE  = "C";
+	public static String CMD_MOVE_QUEUE = "M";
+	public static String CMD_FIND = "f";
+	public static String CMD_SELECTOR = "s";
+	public static String CMD_WAIT = "w";
+	public static String CMD_USER = "U";
+	public static String CMD_PASS = "P";
+	public static String CMD_SET_HEADER = "H";
+	
+	public static String DEFAULT_COUNT_GET = "1";
+	public static String DEFAULT_COUNT_ALL = "0";
+	public static String DEFAULT_WAIT = "50";
+	public static String TYPE_TEXT = "text";
+	public static String DEFAULT_TYPE = TYPE_TEXT;
+	public static String DEFAULT_DATE_FORMAT = "yyyy MM dd HH:mm:ss";
 
 	public static void main(String[] args) throws ParseException, InterruptedException{
 		A a = new A();
@@ -54,35 +92,35 @@ public class A {
 
 	public void run(String[] args) throws InterruptedException{
 		Options opts = new Options();
-		opts.addOption("b", "broker", true, "URL to broker. defaults to: tcp://localhost:61616");
-		opts.addOption("g","get", false, "Get a message from destination");
-		opts.addOption("p","put", true, "Put a message. Specify data. if starts with @, a file is assumed and loaded");
-		opts.addOption("t","type",true, "Message type to put, [bytes, text] - defaults to text");
-		opts.addOption("e","encoding",true,"Encoding of input file data. Default UTF-8");
-		opts.addOption("n","non-persistent",false,"Set message to non persistent.");
-		opts.addOption("r","reply-to",true,"Set reply to destination, i.e. queue:reply");
-		opts.addOption("o","output",true,"file to write payload to. If multiple messages, a -1.<ext> will be added to the file. BytesMessage will be written as-is, TextMessage will be written in UTF-8");
-		opts.addOption("c","count",true,"A number of messages to browse,get or put (put will put the same message <count> times). 0 means all messages.");
-		opts.addOption("j","jms-headers",false,"Print JMS headers");
-		opts.addOption("C","copy-queue",true,"Copy all messages from this to target. Limited by maxBrowsePageSize in broker settings (default 400).");
-		opts.addOption("M","move-queue",true,"Move all messages from this to target");
-		opts.addOption("f", "find", true, "Search for messages in queue with this value in payload. Use with browse.");
-		opts.addOption("s","selector",true,"Browse or get with selector");
-		opts.addOption("w","wait",true,"Time to wait on get operation. Default 50. 0 equals infinity");
-		opts.addOption("U","user",true,"Username to connect to broker");
-		opts.addOption("P","pass",true,"Password to connect to broker");
+		opts.addOption(CMD_BROKER, "broker", true, "URL to broker. defaults to: tcp://localhost:61616");
+		opts.addOption(CMD_GET,"get", false, "Get a message from destination");
+		opts.addOption(CMD_PUT,"put", true, "Put a message. Specify data. if starts with @, a file is assumed and loaded");
+		opts.addOption(CMD_TYPE,"type",true, "Message type to put, [bytes, text] - defaults to text");
+		opts.addOption(CMD_ENCODING,"encoding",true,"Encoding of input file data. Default UTF-8");
+		opts.addOption(CMD_NON_PERSISTENT,"non-persistent",false,"Set message to non persistent.");
+		opts.addOption(CMD_REPLY_TO,"reply-to",true,"Set reply to destination, i.e. queue:reply");
+		opts.addOption(CMD_OUTPUT,"output",true,"file to write payload to. If multiple messages, a -1.<ext> will be added to the file. BytesMessage will be written as-is, TextMessage will be written in UTF-8");
+		opts.addOption(CMD_COUNT,"count",true,"A number of messages to browse,get or put (put will put the same message <count> times). 0 means all messages.");
+		opts.addOption(CMD_JMS_HEADERS,"jms-headers",false,"Print JMS headers");
+		opts.addOption(CMD_COPY_QUEUE,"copy-queue",true,"Copy all messages from this to target. Limited by maxBrowsePageSize in broker settings (default 400).");
+		opts.addOption(CMD_MOVE_QUEUE,"move-queue",true,"Move all messages from this to target");
+		opts.addOption(CMD_FIND, "find", true, "Search for messages in queue with this value in payload. Use with browse.");
+		opts.addOption(CMD_SELECTOR,"selector",true,"Browse or get with selector");
+		opts.addOption(CMD_WAIT,"wait",true,"Time to wait on get operation. Default 50. 0 equals infinity");
+		opts.addOption(CMD_USER,"user",true,"Username to connect to broker");
+		opts.addOption(CMD_PASS,"pass",true,"Password to connect to broker");
 		@SuppressWarnings("static-access")
 		Option property = OptionBuilder.withArgName("property=value" )
                 .hasArgs(2)
                 .withValueSeparator()
                 .withDescription( "use value for given property. Can be used several times." )
-                .create( "H" );
+                .create( CMD_SET_HEADER );
 
 		opts.addOption(property);
 
 		if( args.length == 0){
 			HelpFormatter helpFormatter = new HelpFormatter();
-			helpFormatter.printHelp("java -jar a.jar", opts, true);
+			helpFormatter.printHelp("java -jar a-<version>-with-dependencies.jar", opts, true);
 			System.exit(0);
 		}
 
@@ -90,19 +128,19 @@ public class A {
 
 		try {
 			cmdLine = cmdParser.parse(opts, args);
-			connect(cmdLine.getOptionValue("b", "tcp://localhost:61616"),
-					cmdLine.getOptionValue("user"),
-					cmdLine.getOptionValue("pass"));
+			connect(cmdLine.getOptionValue(CMD_BROKER, "tcp://localhost:61616"),
+					cmdLine.getOptionValue(CMD_USER),
+					cmdLine.getOptionValue(CMD_PASS));
 
 			 long startTime = System.currentTimeMillis();
 
-			if( cmdLine.hasOption("g")){
+			if( cmdLine.hasOption(CMD_GET)){
 				executeGet(cmdLine);
-			}else if(cmdLine.hasOption("p") ){
+			}else if(cmdLine.hasOption(CMD_PUT) ){
 				executePut(cmdLine);
-			}else if( cmdLine.hasOption("C")){
+			}else if( cmdLine.hasOption(CMD_COPY_QUEUE)){
 				executeCopy(cmdLine);
-			}else if( cmdLine.hasOption("M")){
+			}else if( cmdLine.hasOption(CMD_MOVE_QUEUE)){
 				executeMove(cmdLine);
 			}else{
 				executeBrowse(cmdLine);
@@ -110,7 +148,7 @@ public class A {
 
 		  long stopTime = System.currentTimeMillis();
 		  long elapsedTime = stopTime - startTime;
-		  System.out.println("Operation completed in " + elapsedTime + "ms (excluding connect)");
+		  output("Operation completed in ",Long.toString(elapsedTime),"ms (excluding connect)");
 		} catch (ParseException pe) {
 			pe.printStackTrace();
 			return;
@@ -128,21 +166,21 @@ public class A {
 				e2.printStackTrace();
 			}
 		}
-		logger.debug("Active threads " + Thread.activeCount());
+		logger.debug("Active threads {}", Thread.activeCount());
 		logger.debug("At the end of the road");
 	}
 
-	private void executeMove(CommandLine cmdLine) throws JMSException, UnsupportedEncodingException, IOException {
+	protected void executeMove(CommandLine cmdLine) throws JMSException, UnsupportedEncodingException, IOException {
 		Queue tq = tsess.createQueue(cmdLine.getArgs()[0]);
-		Queue q =  tsess.createQueue(cmdLine.getOptionValue("M")); // Source
+		Queue q =  tsess.createQueue(cmdLine.getOptionValue(CMD_MOVE_QUEUE)); // Source
 		MessageConsumer mq = null;
 		MessageProducer mp = tsess.createProducer(tq);
-		if( cmdLine.hasOption("s")){ // Selectors
-			mq = tsess.createConsumer(q,cmdLine.getOptionValue("s"));
+		if( cmdLine.hasOption(CMD_SELECTOR)){ // Selectors
+			mq = tsess.createConsumer(q,cmdLine.getOptionValue(CMD_SELECTOR));
 		}else{
 			mq = tsess.createConsumer(q);
 		}
-		int count = Integer.parseInt(cmdLine.getOptionValue("c","0"));
+		int count = Integer.parseInt(cmdLine.getOptionValue(CMD_COUNT,DEFAULT_COUNT_ALL));
 		int i = 0;
 		while(i < count || count == 0 ){
 			Message msg = mq.receive(100L);
@@ -154,20 +192,21 @@ public class A {
 				++i;
 			}
 		}
-		output(i + " msgs moved from " + cmdLine.getArgs()[0] + " to " + cmdLine.getOptionValue("M"));
+		output(i, " msgs moved from ", cmdLine.getArgs()[0], 
+				" to ",cmdLine.getOptionValue(CMD_MOVE_QUEUE));
 	}
 
-	private void executeCopy(CommandLine cmdLine) throws JMSException {
+	protected void executeCopy(CommandLine cmdLine) throws JMSException {
 		Queue tq = sess.createQueue(cmdLine.getArgs()[0]);
-		Queue q =  sess.createQueue(cmdLine.getOptionValue("C")); // Source
+		Queue q =  sess.createQueue(cmdLine.getOptionValue(CMD_COPY_QUEUE)); // Source
 		QueueBrowser qb = null;
 		MessageProducer mp = sess.createProducer(tq);
-		if( cmdLine.hasOption("s")){ // Selectors
-			qb = sess.createBrowser(q,cmdLine.getOptionValue("s"));
+		if( cmdLine.hasOption(CMD_SELECTOR)){ // Selectors
+			qb = sess.createBrowser(q,cmdLine.getOptionValue(CMD_SELECTOR));
 		}else{
 			qb = sess.createBrowser(q);
 		}
-		int count = Integer.parseInt(cmdLine.getOptionValue("c","0"));
+		int count = Integer.parseInt(cmdLine.getOptionValue(CMD_COUNT,DEFAULT_COUNT_ALL));
 		int i = 0, j = 0;
 		@SuppressWarnings("unchecked")
 		Enumeration<Message> en = qb.getEnumeration();
@@ -177,10 +216,10 @@ public class A {
 				break;
 			}else{
 				// if search is enabled
-				if( cmdLine.hasOption("f")){
+				if( cmdLine.hasOption(CMD_FIND)){
 					if( msg instanceof TextMessage){
 						String haystack = ((TextMessage)msg).getText();
-						String needle = cmdLine.getOptionValue("f");
+						String needle = cmdLine.getOptionValue(CMD_FIND);
 						if( haystack != null && haystack.contains(needle)){
 							mp.send(msg);
 							++j;
@@ -193,10 +232,11 @@ public class A {
 				++i;
 			}
 		}
-		output(j + " msgs copied from " + cmdLine.getArgs()[0] + " to " + cmdLine.getOptionValue("C"));
+		output(j," msgs copied from ", cmdLine.getArgs()[0], 
+				" to ", cmdLine.getOptionValue(CMD_COPY_QUEUE));
 	}
 
-	private void connect(String url,String user, String password) throws JMSException {
+	protected void connect(String url,String user, String password) throws JMSException {
 		cf = new ActiveMQConnectionFactory(url);
 		if( user != null && password != null){
 			conn = (Connection) cf.createConnection(user, password);
@@ -209,47 +249,41 @@ public class A {
 		conn.start();
 	}
 
-	private void executeGet(CommandLine cmdLine) throws JMSException, UnsupportedEncodingException, IOException {
+	protected void executeGet(CommandLine cmdLine) throws JMSException, UnsupportedEncodingException, IOException {
 		Destination dest = createDestination(cmdLine.getArgs()[0]);
 		MessageConsumer mq = null;
-		if( cmdLine.hasOption("s")){ // Selectors
-			mq = sess.createConsumer(dest,cmdLine.getOptionValue("s"));
+		if( cmdLine.hasOption(CMD_SELECTOR)){ // Selectors
+			mq = sess.createConsumer(dest,cmdLine.getOptionValue(CMD_SELECTOR));
 		}else{
 			mq = sess.createConsumer(dest);
 		}
-		int count = Integer.parseInt(cmdLine.getOptionValue("c","1"));
-		long wait = Long.parseLong(cmdLine.getOptionValue("w","50"));
+		int count = Integer.parseInt(cmdLine.getOptionValue(CMD_COUNT,DEFAULT_COUNT_GET));
+		long wait = Long.parseLong(cmdLine.getOptionValue(CMD_WAIT,DEFAULT_WAIT));
 		int i = 0;
 		while(i < count || i == 0 ){
 			Message msg = mq.receive(wait);
 			if( msg == null){
-				System.out.println("Null message");
+				output("No message received");
 				break;
 			}else{
-				outputMessage(msg,cmdLine.hasOption("j"));
+				outputMessage(msg,cmdLine.hasOption(CMD_JMS_HEADERS));
 				++i;
 			}
 		}
 	}
 
-	/**
-	 * Put a message to a queue
-	 * @param  cmdLine      [description]
-	 * @throws IOException  [description]
-	 * @throws JMSException [description]
-	 */
-	private void executePut(CommandLine cmdLine) throws IOException, JMSException {
+	protected void executePut(CommandLine cmdLine) throws IOException, JMSException {
 		// Check if we have properties to put
-		Properties props = cmdLine.getOptionProperties("H");
-		String type = cmdLine.getOptionValue("t","text");
-		String encoding = cmdLine.getOptionValue("e","UTF-8");
+		Properties props = cmdLine.getOptionProperties(CMD_SET_HEADER);
+		String type = cmdLine.getOptionValue(CMD_TYPE,DEFAULT_TYPE);
+		String encoding = cmdLine.getOptionValue(CMD_ENCODING, Charset.defaultCharset().name());
 		Message outMsg = null;
 		// figure out input data
-		String data = cmdLine.getOptionValue("p");
+		String data = cmdLine.getOptionValue(CMD_PUT);
 		if( data.startsWith("@")){
 			// Load file.
 			byte[] bytes = FileUtils.readFileToByteArray(new File(data.substring(1)));
-			if( type.equals("text")){
+			if( type.equals(TYPE_TEXT)){
 				TextMessage textMsg = sess.createTextMessage(new String(bytes,encoding));
 				outMsg = textMsg;
 			}else{
@@ -281,14 +315,15 @@ public class A {
 			for(int i=0;i<count;i++){
 				mp.send(outMsg);
 			}
-			System.out.println("" + count + " messages sent");
+			output("", count," messages sent");
 		}else{
 			mp.send(outMsg);
-			System.out.println("Message sent");
+			output("Message sent");
 		}
 	}
 
-	private Destination createDestination(String name) throws JMSException {
+	// Accepts a plain name, queue://<name>, topic://<name> etc.
+	protected Destination createDestination(String name) throws JMSException {
 		// support queue:// as well.
 		name = name.replace("/","");
 		if( name.toLowerCase().startsWith("queue:")){
@@ -300,40 +335,40 @@ public class A {
 		}
 	}
 
-	private void executeBrowse(CommandLine cmdLine) throws JMSException, UnsupportedEncodingException, IOException {
+	protected void executeBrowse(CommandLine cmdLine) throws JMSException, UnsupportedEncodingException, IOException {
 		Queue q = sess.createQueue(cmdLine.getArgs()[0]);
 		QueueBrowser qb = null;
 		// Selector aware?
-		if( cmdLine.hasOption("s")){
-			qb = sess.createBrowser(q,cmdLine.getOptionValue("s"));
+		if( cmdLine.hasOption(CMD_SELECTOR)){
+			qb = sess.createBrowser(q,cmdLine.getOptionValue(CMD_SELECTOR));
 		}else{
 			qb = sess.createBrowser(q);
 		}
 
 		@SuppressWarnings("rawtypes")
 		Enumeration en = qb.getEnumeration();
-		int count = Integer.parseInt(cmdLine.getOptionValue("c","0"));
+		int count = Integer.parseInt(cmdLine.getOptionValue(CMD_COUNT,DEFAULT_COUNT_ALL));
 		int i = 0;
 		while(en.hasMoreElements() && (i < count || count == 0 )){
 			Object obj = en.nextElement();
 			Message msg = (Message)obj;
-			if( cmdLine.hasOption("f")){
-				String needle = cmdLine.getOptionValue("f");
+			if( cmdLine.hasOption(CMD_FIND)){
+				String needle = cmdLine.getOptionValue(CMD_FIND);
 				// need to search for some payload value
 				if( msg instanceof TextMessage){
 					String haystack = ((TextMessage)msg).getText();
 					if(haystack.contains(needle)){
-						outputMessage(msg,cmdLine.hasOption("j"));
+						outputMessage(msg,cmdLine.hasOption(CMD_JMS_HEADERS));
 					}
 				}
 			}else{
-				outputMessage(msg,cmdLine.hasOption("j"));
+				outputMessage(msg,cmdLine.hasOption(CMD_JMS_HEADERS));
 			}
 			++i;
 		}
 	}
 
-	private void outputMessage(Message msg,boolean printJMSHeaders) throws JMSException, UnsupportedEncodingException, IOException {
+	protected void outputMessage(Message msg,boolean printJMSHeaders) throws JMSException, UnsupportedEncodingException, IOException {
 		output("-----------------");
 		if( printJMSHeaders ){
 			outputHeaders(msg);
@@ -342,8 +377,8 @@ public class A {
 		// Output to file?
 		FileOutputStream fos = null;
 		File file = null;
-		if( cmdLine.hasOption("o")){
-			file = getNextFilename(cmdLine.getOptionValue("o","amsg"),0);
+		if( cmdLine.hasOption(CMD_OUTPUT)){
+			file = getNextFilename(cmdLine.getOptionValue(CMD_OUTPUT,"amsg"),0);
 			if( file != null ) {
 				fos = new FileOutputStream(file);
 			}
@@ -352,9 +387,9 @@ public class A {
 		if( msg instanceof TextMessage){
 			TextMessage txtMsg = (TextMessage)msg;
 			if( fos != null){
-				fos.write(txtMsg.getText().getBytes(cmdLine.getOptionValue("e","UTF-8")));
+				fos.write(txtMsg.getText().getBytes(cmdLine.getOptionValue(CMD_ENCODING,Charset.defaultCharset().name())));
 				fos.close();
-				output("Payload written to file " + file.getAbsolutePath());
+				output("Payload written to file ", file.getAbsolutePath());
 			}else{
 				output("Payload:");
 				output(txtMsg.getText());
@@ -366,17 +401,17 @@ public class A {
 			if( fos != null ){
 				fos.write(bytes);
 				fos.close();
-				output("Payload written to file " + file.getAbsolutePath());
+				output("Payload written to file ", file.getAbsolutePath());
 			}else{
 				output("Hex Payload:");
 				output(bytesToHex(bytes));
 			}
 		}else{
-			System.out.println("Unsupported message type: " + msg.getClass().getName());
+			output("Unsupported message type: ", msg.getClass().getName());
 		}
 	}
 
-	private File getNextFilename(String suggestedFilename, int i) {
+	protected File getNextFilename(String suggestedFilename, int i) {
 		String filename = suggestedFilename;
 		if( i > 0 ){
 			int idx = filename.lastIndexOf('.');
@@ -395,7 +430,7 @@ public class A {
 		}
 	}
 
-	private void outputHeaders(Message msg){
+	protected void outputHeaders(Message msg){
 		output("Message Headers");
 		try {
 		    String deliveryMode = msg.getJMSDeliveryMode() == DeliveryMode.PERSISTENT?"persistent":"non-persistent";
@@ -415,32 +450,31 @@ public class A {
 		}
 	}
 
-	private String timestampToString(long timestamp){
+	protected String timestampToString(long timestamp){
 		Date date = new Date(timestamp);
-	    Format format = new SimpleDateFormat("yyyy MM dd HH:mm:ss");
+	    Format format = new SimpleDateFormat(DEFAULT_DATE_FORMAT);
 	    String timeString =  format.format(date).toString();
 	    return timeString;
 	}
 
-	private void outputProperties(Message msg) throws JMSException {
+	protected void outputProperties(Message msg) throws JMSException {
 		output("Message Properties");
 		@SuppressWarnings("unchecked")
 		Enumeration<String> en = msg.getPropertyNames();
 		while(en.hasMoreElements()){
 			String name = en.nextElement();
 			Object property = msg.getObjectProperty(name);
-			output("  " + name + ": " + property.toString());
+			output("  ", name ,": ",property.toString());
 		}
 	}
 
-	private void output(String... args){
-		for(String arg : args){
-			System.out.println(arg);
-		}
+	protected void output(Object... args){
+		output.output(args);
 	}
 
-	final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
-	public String bytesToHex(byte[] bytes) {
+	//Byte flippin magic. Gotta love it.
+	protected String bytesToHex(byte[] bytes) {
+		final char[] hexArray = "0123456789ABCDEF".toCharArray();
 	    char[] hexChars = new char[bytes.length * 2];
 	    for ( int j = 0; j < bytes.length; j++ ) {
 	        int v = bytes[j] & 0xFF;

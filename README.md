@@ -14,7 +14,7 @@ usage: java -jar a.jar [-b <arg>] [-c <arg>] [-C <arg>] [-e <arg>] [-f
  -c,--count <arg>        A number of messages to browse,get or put (put
                          will put the same message <count> times). 0 means
                          all messages.
- -C,--copy-queue <arg>   Copy all messages from this to target
+ -C,--copy-queue <arg>   Copy all messages from this to target. Limited by maxBrowsePageSize on browser (default 400).
  -e,--encoding <arg>     Encoding of input file data. Default UTF-8
  -f,--find <arg>         Search for messages in queue with this value in
                          payload. Use with browse.

@@ -3,11 +3,17 @@
   <groupId>com.libzter.a</groupId>
   <artifactId>a</artifactId>
   <version>1.0.3-SNAPSHOT</version>
+  
+  <properties>
+  	<activemq.version>5.10.0</activemq.version>
+    <spring.version>3.2.8.RELEASE</spring.version>
+  </properties>
+  
   <dependencies>
   	<dependency>
   		<groupId>org.apache.activemq</groupId>
   		<artifactId>activemq-all</artifactId>
-  		<version>5.6.0</version>
+  		<version>${activemq.version}</version>
   	</dependency>
   	<dependency>
   		<groupId>commons-cli</groupId>
@@ -19,6 +25,94 @@
   		<artifactId>commons-io</artifactId>
   		<version>2.4</version>
   	</dependency>
+  	
+  	
+  	<!-- Test dependencies -->
+  	<dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-core</artifactId>
+        <version>${spring.version}</version>
+        <scope>test</scope>
+    </dependency>
+    
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-expression</artifactId>
+        <version>${spring.version}</version>
+        <scope>test</scope>
+    </dependency>
+    
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-beans</artifactId>
+        <version>${spring.version}</version>
+        <scope>test</scope>
+    </dependency>
+    
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-aop</artifactId>
+        <version>${spring.version}</version>
+        <scope>test</scope>
+    </dependency>
+    
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context-support</artifactId>
+        <version>${spring.version}</version>
+        <scope>test</scope>
+    </dependency>
+    
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>${spring.version}</version>
+        <scope>test</scope>
+    </dependency>
+    
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-jms</artifactId>
+        <version>${spring.version}</version>
+        <scope>test</scope>
+    </dependency>
+    
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-tx</artifactId>
+        <version>${spring.version}</version>
+        <scope>test</scope>
+    </dependency>
+    
+     <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-asm</artifactId>
+        <version>${spring.version}</version>
+        <scope>test</scope>
+    </dependency>
+    
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-test</artifactId>
+        <version>${spring.version}</version>
+        <scope>test</scope>
+    </dependency>
+    
+     <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+    
+    <dependency>
+		<groupId>org.apache.xbean</groupId>
+		<artifactId>xbean-spring</artifactId>
+		<version>3.18</version>
+		<scope>test</scope>
+	</dependency>
+    
+    
   </dependencies>
   <build>
     <defaultGoal>install</defaultGoal>
