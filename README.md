@@ -8,7 +8,8 @@ Used to send, browse and put messages on queues.
 ```
 usage: java -jar a.jar [-b <arg>] [-c <arg>] [-C <arg>] [-e <arg>] [-f
        <arg>] [-g] [-H <property=value>] [-j] [-M <arg>] [-n] [-o <arg>]
-       [-p <arg>] [-r <arg>] [-s <arg>] [-t <arg>] [-w <arg>]
+       [-P <arg>] [-p <arg>] [-r <arg>] [-s <arg>] [-t <arg>] [-U <arg>]
+       [-w <arg>]
  -b,--broker <arg>       URL to broker. defaults to: tcp://localhost:61616
  -c,--count <arg>        A number of messages to browse,get or put (put
                          will put the same message <count> times). 0 means
@@ -27,12 +28,14 @@ usage: java -jar a.jar [-b <arg>] [-c <arg>] [-C <arg>] [-e <arg>] [-f
                          -1.<ext> will be added to the file. BytesMessage
                          will be written as-is, TextMessage will be
                          written in UTF-8
+ -P,--pass <arg>         Password to connect to broker
  -p,--put <arg>          Put a message. Specify data. if starts with @, a
                          file is assumed and loaded
  -r,--reply-to <arg>     Set reply to destination, i.e. queue:reply
  -s,--selector <arg>     Browse or get with selector
  -t,--type <arg>         Message type to put, [bytes, text] - defaults to
                          text
+ -U,--user <arg>         Username to connect to broker
  -w,--wait <arg>         Time to wait on get operation. Default 50. 0
                          equals infinity
 
