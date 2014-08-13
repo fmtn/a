@@ -64,7 +64,7 @@ public class A {
 		opts.addOption("o","output",true,"file to write payload to. If multiple messages, a -1.<ext> will be added to the file. BytesMessage will be written as-is, TextMessage will be written in UTF-8");
 		opts.addOption("c","count",true,"A number of messages to browse,get or put (put will put the same message <count> times). 0 means all messages.");
 		opts.addOption("j","jms-headers",false,"Print JMS headers");
-		opts.addOption("C","copy-queue",true,"Copy all messages from this to target");
+		opts.addOption("C","copy-queue",true,"Copy all messages from this to target. Limited by maxBrowsePageSize in broker settings (default 400).");
 		opts.addOption("M","move-queue",true,"Move all messages from this to target");
 		opts.addOption("f", "find", true, "Search for messages in queue with this value in payload. Use with browse.");
 		opts.addOption("s","selector",true,"Browse or get with selector");
