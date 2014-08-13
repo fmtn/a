@@ -210,12 +210,12 @@ public class A {
 	}
 
 	private void executeGet(CommandLine cmdLine) throws JMSException, UnsupportedEncodingException, IOException {
-		Queue q = sess.createQueue(cmdLine.getArgs()[0]);
+		Destination dest = createDestination(cmdLine.getArgs()[0]);
 		MessageConsumer mq = null;
 		if( cmdLine.hasOption("s")){ // Selectors
-			mq = sess.createConsumer(q,cmdLine.getOptionValue("s"));
+			mq = sess.createConsumer(dest,cmdLine.getOptionValue("s"));
 		}else{
-			mq = sess.createConsumer(q);
+			mq = sess.createConsumer(dest);
 		}
 		int count = Integer.parseInt(cmdLine.getOptionValue("c","1"));
 		long wait = Long.parseLong(cmdLine.getOptionValue("w","50"));
