@@ -21,6 +21,7 @@ usage: java -jar a.jar [-b <arg>] [-c <arg>] [-C <arg>] [-e <arg>] [-f
  -g,--get                Get a message from destination
  -H <property=value>     use value for given property. Can be used several
                          times.
+ -i,--priority <arg>     sets JMSPriority
  -j,--jms-headers        Print JMS headers
  -M,--move-queue <arg>   Move all messages from this to target
  -n,--non-persistent     Set message to non persistent.
