@@ -77,6 +77,7 @@ A {
 	public static String CMD_USER = "U";
 	public static String CMD_PASS = "P";
 	public static String CMD_SET_HEADER = "H";
+	public static String CMD_PRIORITY = "i";
 	
 	public static String DEFAULT_COUNT_GET = "1";
 	public static String DEFAULT_COUNT_ALL = "0";
@@ -109,6 +110,7 @@ A {
 		opts.addOption(CMD_WAIT,"wait",true,"Time to wait on get operation. Default 50. 0 equals infinity");
 		opts.addOption(CMD_USER,"user",true,"Username to connect to broker");
 		opts.addOption(CMD_PASS,"pass",true,"Password to connect to broker");
+		opts.addOption(CMD_PRIORITY,"priority",true,"sets JMSPriority");
 		@SuppressWarnings("static-access")
 		Option property = OptionBuilder.withArgName("property=value" )
                 .hasArgs(2)
@@ -277,6 +279,7 @@ A {
 		Properties props = cmdLine.getOptionProperties(CMD_SET_HEADER);
 		String type = cmdLine.getOptionValue(CMD_TYPE,DEFAULT_TYPE);
 		String encoding = cmdLine.getOptionValue(CMD_ENCODING, Charset.defaultCharset().name());
+		
 		Message outMsg = null;
 		// figure out input data
 		String data = cmdLine.getOptionValue(CMD_PUT);
@@ -295,7 +298,7 @@ A {
 			TextMessage textMsg = sess.createTextMessage(data);
 			outMsg = textMsg;
 		}
-
+		
 		MessageProducer mp = sess.createProducer(createDestination(cmdLine.getArgs()[0]));
 		if( cmdLine.hasOption("n")){;
 			mp.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
@@ -309,6 +312,16 @@ A {
 		if( cmdLine.hasOption("r")){
 			outMsg.setJMSReplyTo(createDestination(cmdLine.getOptionValue("r")));
 		}
+		
+		if( cmdLine.hasOption(CMD_PRIORITY)){
+			try{
+				int priority = Integer.parseInt(cmdLine.getOptionValue(CMD_PRIORITY));
+				mp.setPriority(priority);
+			}catch(NumberFormatException nfe){
+				throw new NumberFormatException("JMSPriority has to be an integer value");
+			}
+		}
+		
 		// send multiple messages?
 		if( cmdLine.hasOption("c")){
 			int count = Integer.parseInt(cmdLine.getOptionValue("c"));

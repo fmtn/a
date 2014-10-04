@@ -4,6 +4,7 @@ import static com.libzter.a.A.CMD_BROKER;
 import static com.libzter.a.A.CMD_GET;
 import static com.libzter.a.A.CMD_PUT;
 import static com.libzter.a.A.CMD_WAIT;
+import static com.libzter.a.A.CMD_PRIORITY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -111,6 +112,18 @@ public class ATestCases {
     	MessageConsumer mc = session.createConsumer(testQueue);
     	TextMessage msg = (TextMessage)mc.receive(TEST_TIMEOUT);
     	assertEquals("test",msg.getText());
+    }
+    
+    @Test
+    public void testPutWithPriority() throws Exception{
+    	final int priority = 6;
+    	String cmdLine = CMD_LINE_COMMON + "-" + CMD_PRIORITY +" " + priority + " -" + CMD_PUT + "\"test\"" 
+    			+ " TEST.QUEUE";
+    	a.run(cmdLine.split(" "));
+    	MessageConsumer mc = session.createConsumer(testQueue);
+    	TextMessage msg = (TextMessage)mc.receive(TEST_TIMEOUT);
+    	assertEquals("test",msg.getText());
+    	assertEquals(priority,msg.getJMSPriority());
     }
     
     @Test
