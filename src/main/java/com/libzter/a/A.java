@@ -194,8 +194,8 @@ A {
 				++i;
 			}
 		}
-		output(i, " msgs moved from ", cmdLine.getArgs()[0], 
-				" to ",cmdLine.getOptionValue(CMD_MOVE_QUEUE));
+		output(i, " msgs moved from ", cmdLine.getOptionValue(CMD_MOVE_QUEUE), 
+				" to ",cmdLine.getArgs()[0]);
 	}
 
 	protected void executeCopy(CommandLine cmdLine) throws JMSException {
@@ -234,8 +234,7 @@ A {
 				++i;
 			}
 		}
-		output(j," msgs copied from ", cmdLine.getArgs()[0], 
-				" to ", cmdLine.getOptionValue(CMD_COPY_QUEUE));
+		output(j," msgs copied from ", cmdLine.getOptionValue(CMD_COPY_QUEUE), " to ", cmdLine.getArgs()[0]);
 	}
 
 	protected void connect(String url,String user, String password) throws JMSException {
