@@ -2,17 +2,17 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.libzter.a</groupId>
   <artifactId>a</artifactId>
-  <version>1.0.3-SNAPSHOT</version>
+  <version>1.1.0-SNAPSHOT</version>
   
   <properties>
-  	<activemq.version>5.10.0</activemq.version>
+  	<activemq.version>5.10.1</activemq.version>
     <spring.version>3.2.8.RELEASE</spring.version>
   </properties>
   
   <dependencies>
   	<dependency>
   		<groupId>org.apache.activemq</groupId>
-  		<artifactId>activemq-all</artifactId>
+  		<artifactId>activemq-client</artifactId>
   		<version>${activemq.version}</version>
   	</dependency>
   	<dependency>
@@ -25,6 +25,21 @@
   		<artifactId>commons-io</artifactId>
   		<version>2.4</version>
   	</dependency>
+    <dependency>
+      <groupId>org.apache.geronimo.specs</groupId>
+      <artifactId>geronimo-jms_1.1_spec</artifactId>
+      <version>1.1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.1.2</version>
+    </dependency>
+    <!--<dependency>
+      <groupId>org.apache.qpid</groupId>
+      <artifactId>qpid-amqp-1-0-client-jms</artifactId>
+      <version>${project.version}</version>
+    </dependency>-->
   	
   	
   	<!-- Test dependencies -->
@@ -90,6 +105,13 @@
         <artifactId>spring-test</artifactId>
         <version>${spring.version}</version>
         <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.activemq</groupId>
+      <artifactId>activemq-broker</artifactId>
+      <version>${activemq.version}</version>
+      <scope>test</scope>
     </dependency>
     
      <dependency>
