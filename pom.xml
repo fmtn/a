@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.libzter.a</groupId>
   <artifactId>a</artifactId>
-  <version>1.1.0</version>
+  <version>1.1.1-SNAPSHOT</version>
   
   <properties>
   	<activemq.version>5.10.1</activemq.version>
