@@ -35,11 +35,11 @@
       <artifactId>logback-classic</artifactId>
       <version>1.1.2</version>
     </dependency>
-    <!--<dependency>
+    <dependency>
       <groupId>org.apache.qpid</groupId>
       <artifactId>qpid-amqp-1-0-client-jms</artifactId>
-      <version>${project.version}</version>
-    </dependency>-->
+      <version>0.30</version>
+    </dependency>
   	
   	
   	<!-- Test dependencies -->

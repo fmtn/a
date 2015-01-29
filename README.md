@@ -6,15 +6,18 @@ A is an ActiveMQ testing/admin utility
 Used to send, browse and put messages on queues.
 
 ```
-usage: java -jar a.jar [-b <arg>] [-c <arg>] [-C <arg>] [-e <arg>] [-f
-       <arg>] [-g] [-H <property=value>] [-j] [-M <arg>] [-n] [-o <arg>]
-       [-P <arg>] [-p <arg>] [-r <arg>] [-s <arg>] [-t <arg>] [-U <arg>]
-       [-w <arg>]
+usage: java -jar a-<version>-with-dependencies.jar [-A] [-b <arg>] [-c
+       <arg>] [-C <arg>] [-e <arg>] [-f <arg>] [-g] [-H <property=value>]
+       [-i <arg>] [-j] [-M <arg>] [-n] [-o <arg>] [-P <arg>] [-p <arg>]
+       [-r <arg>] [-s <arg>] [-t <arg>] [-U <arg>] [-w <arg>]
+ -A,--amqp               Set protocol to AMQP. Defaults to OpenWire.
  -b,--broker <arg>       URL to broker. defaults to: tcp://localhost:61616
  -c,--count <arg>        A number of messages to browse,get or put (put
                          will put the same message <count> times). 0 means
                          all messages.
- -C,--copy-queue <arg>   Copy all messages from this to target. Limited by maxBrowsePageSize on browser (default 400).
+ -C,--copy-queue <arg>   Copy all messages from this to target. Limited by
+                         maxBrowsePageSize in broker settings (default
+                         400).
  -e,--encoding <arg>     Encoding of input file data. Default UTF-8
  -f,--find <arg>         Search for messages in queue with this value in
                          payload. Use with browse.
@@ -39,7 +42,6 @@ usage: java -jar a.jar [-b <arg>] [-c <arg>] [-C <arg>] [-e <arg>] [-f
  -U,--user <arg>         Username to connect to broker
  -w,--wait <arg>         Time to wait on get operation. Default 50. 0
                          equals infinity
-
 ```
 
 Example1. Put message with payload "foobar" to queue q on local broker:
@@ -69,6 +71,13 @@ Example6. Put file foo.bar as a byte message on queue q
 Example7. Put file foo.bar as text message on queue q, with encoding EBCDIC CP037 (any charset known on server/JVM should work)
     
     $a -p "@foo.bar" -e CP037 q
+
+
+#Use AMQP 1.0
+A defaults to ActiveMQ default protocol, OpenWire. You can also use AMQP 1.0.
+In theory, it should work with all AMQP compliant brokers.
+
+$a -A -b "amqp://guest:guest@localhost:5672" -p "foobar" q
 
 #Build
 

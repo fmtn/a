@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.nio.charset.Charset;
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -14,6 +15,7 @@ import java.util.Properties;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -35,6 +37,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.commons.io.FileUtils;
+import org.apache.qpid.amqp_1_0.jms.impl.ConnectionFactoryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +47,7 @@ import org.slf4j.LoggerFactory;
 public class 
 A {
 	private static final Logger logger = LoggerFactory.getLogger(A.class);
-	protected ActiveMQConnectionFactory cf;
+	protected ConnectionFactory cf;
 	protected Connection conn;
 	protected Session sess,tsess;
 	protected CommandLine cmdLine;
@@ -59,6 +62,7 @@ A {
 		}
 	};
 	
+	public static String CMD_AMQP = "A";
 	public static String CMD_BROKER = "b";
 	public static String CMD_GET = "g";
 	public static String CMD_PUT = "p";
@@ -111,6 +115,7 @@ A {
 		opts.addOption(CMD_USER,"user",true,"Username to connect to broker");
 		opts.addOption(CMD_PASS,"pass",true,"Password to connect to broker");
 		opts.addOption(CMD_PRIORITY,"priority",true,"sets JMSPriority");
+		opts.addOption(CMD_AMQP,"amqp",false,"Set protocol to AMQP. Defaults to OpenWire");
 		@SuppressWarnings("static-access")
 		Option property = OptionBuilder.withArgName("property=value" )
                 .hasArgs(2)
@@ -132,7 +137,8 @@ A {
 			cmdLine = cmdParser.parse(opts, args);
 			connect(cmdLine.getOptionValue(CMD_BROKER, "tcp://localhost:61616"),
 					cmdLine.getOptionValue(CMD_USER),
-					cmdLine.getOptionValue(CMD_PASS));
+					cmdLine.getOptionValue(CMD_PASS),
+					cmdLine.hasOption(CMD_AMQP));
 
 			 long startTime = System.currentTimeMillis();
 
@@ -237,17 +243,25 @@ A {
 		output(j," msgs copied from ", cmdLine.getOptionValue(CMD_COPY_QUEUE), " to ", cmdLine.getArgs()[0]);
 	}
 
-	protected void connect(String url,String user, String password) throws JMSException {
-		cf = new ActiveMQConnectionFactory(url);
+	protected void connect(String url,String user, String password,boolean amqp) throws JMSException {
+		cf = amqp ? createAMQPCF(url) : (new ActiveMQConnectionFactory(url));
+		
 		if( user != null && password != null){
 			conn = (Connection) cf.createConnection(user, password);
 		}else{
 			conn = cf.createConnection();
 		}
-
 		sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 		tsess = conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
 		conn.start();
+	}
+
+	protected ConnectionFactory createAMQPCF(String uri){
+		try{
+			return  ConnectionFactoryImpl.createFromURL(uri);
+		}catch(MalformedURLException e){
+			throw new IllegalArgumentException(e.getMessage());
+		}
 	}
 
 	protected void executeGet(CommandLine cmdLine) throws JMSException, UnsupportedEncodingException, IOException {
