@@ -5,6 +5,9 @@ A is an ActiveMQ testing/admin utility
 
 Used to send, browse and put messages on queues.
 
+[![Build Status](https://api.travis-ci.org/northlander/a.svg?bransch=master)](https://api.travis-ci.org/northlander/a)
+
+
 ```
 usage: java -jar a-<version>-with-dependencies.jar [-A] [-b <arg>] [-c
        <arg>] [-C <arg>] [-e <arg>] [-f <arg>] [-g] [-H <property=value>]
