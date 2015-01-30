@@ -10,7 +10,7 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-b <arg>] [-c
        <arg>] [-C <arg>] [-e <arg>] [-f <arg>] [-g] [-H <property=value>]
        [-i <arg>] [-j] [-M <arg>] [-n] [-o <arg>] [-P <arg>] [-p <arg>]
        [-r <arg>] [-s <arg>] [-t <arg>] [-U <arg>] [-w <arg>]
- -A,--amqp               Set protocol to AMQP. Defaults to OpenWire.
+ -A,--amqp               Set protocol to AMQP 1.0. Defaults to OpenWire.
  -b,--broker <arg>       URL to broker. defaults to: tcp://localhost:61616
  -c,--count <arg>        A number of messages to browse,get or put (put
                          will put the same message <count> times). 0 means
@@ -75,7 +75,7 @@ Example7. Put file foo.bar as text message on queue q, with encoding EBCDIC CP03
 
 #Use AMQP 1.0
 A defaults to ActiveMQ default protocol, OpenWire. You can also use AMQP 1.0.
-In theory, it should work with all AMQP compliant brokers.
+In theory, it should work with all AMQP 1.0 compliant brokers. It does not work with older versions of AMQP.
 
 $a -A -b "amqp://guest:guest@localhost:5672" -p "foobar" q
 

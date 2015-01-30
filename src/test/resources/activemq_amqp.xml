@@ -24,7 +24,7 @@
     <!--
         The <broker> element is used to configure the ActiveMQ broker.
     -->
-    <broker xmlns="http://activemq.apache.org/schema/core" brokerName="localhost" dataDirectory="target/amqdata">
+    <broker xmlns="http://activemq.apache.org/schema/core" brokerName="localhost" dataDirectory="target/amqdata_amqp">
 
         <destinationPolicy>
             <policyMap>
@@ -88,7 +88,7 @@
             http://activemq.apache.org/configuring-transports.html
         -->
         <transportConnectors>
-           <transportConnector name="openwire" uri="tcp://0.0.0.0:61916?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
+            <transportConnector name="amqp" uri="amqp://0.0.0.0:5677?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
         </transportConnectors>
 
     </broker>
