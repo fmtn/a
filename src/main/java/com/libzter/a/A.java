@@ -1,9 +1,6 @@
 package com.libzter.a;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.nio.charset.Charset;
 import java.text.Format;
@@ -26,6 +23,8 @@ import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.naming.InitialContext;
+import javax.naming.Context;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.cli.CommandLine;
@@ -82,7 +81,8 @@ A {
 	public static String CMD_PASS = "P";
 	public static String CMD_SET_HEADER = "H";
 	public static String CMD_PRIORITY = "i";
-	
+	public static String CMD_JNDI = "J";
+	public static String CMD_JNDI_CF = "F";
 	public static String DEFAULT_COUNT_GET = "1";
 	public static String DEFAULT_COUNT_ALL = "0";
 	public static String DEFAULT_WAIT = "50";
@@ -116,6 +116,9 @@ A {
 		opts.addOption(CMD_PASS,"pass",true,"Password to connect to broker");
 		opts.addOption(CMD_PRIORITY,"priority",true,"sets JMSPriority");
 		opts.addOption(CMD_AMQP,"amqp",false,"Set protocol to AMQP. Defaults to OpenWire");
+		opts.addOption(CMD_JNDI,"jndi",true,"Connect via JNDI. Overrides -b and -A options. Specify context file on classpath");
+		opts.addOption(CMD_JNDI_CF,"jndi-cf-name",true,"Specify JNDI name for ConnectionFactory. Defaults to connectionFactory. Use with -J");
+
 		@SuppressWarnings("static-access")
 		Option property = OptionBuilder.withArgName("property=value" )
                 .hasArgs(2)
@@ -138,7 +141,8 @@ A {
 			connect(cmdLine.getOptionValue(CMD_BROKER, "tcp://localhost:61616"),
 					cmdLine.getOptionValue(CMD_USER),
 					cmdLine.getOptionValue(CMD_PASS),
-					cmdLine.hasOption(CMD_AMQP));
+					cmdLine.hasOption(CMD_AMQP),
+					cmdLine.getOptionValue(CMD_JNDI,""));
 
 			 long startTime = System.currentTimeMillis();
 
@@ -243,8 +247,30 @@ A {
 		output(j," msgs copied from ", cmdLine.getOptionValue(CMD_COPY_QUEUE), " to ", cmdLine.getArgs()[0]);
 	}
 
-	protected void connect(String url,String user, String password,boolean amqp) throws JMSException {
-		cf = amqp ? createAMQPCF(url) : (new ActiveMQConnectionFactory(url));
+	protected void connect(String url,String user, String password,boolean amqp,String jndi) throws JMSException {
+		if( jndi == null || jndi == ""){
+			cf = amqp ? createAMQPCF(url) : (new ActiveMQConnectionFactory(url));
+		}else {
+			// Initialize CF via JNDI.
+			Properties properties = new Properties();
+			try{
+				String correctedJndiPropertiesFile = jndi;
+				if( !jndi.startsWith("/")){
+					correctedJndiPropertiesFile = "/" + jndi;
+				}
+				InputStream propertiesStream = getClass().getResourceAsStream(correctedJndiPropertiesFile);
+				// Read the hello.properties JNDI properties file and use contents to create the InitialContext.
+				properties.load(propertiesStream);
+				Context context = new InitialContext(properties);
+				// Alternatively, JNDI information can be supplied by setting the "java.naming.factory.initial"
+				// system property to value "org.apache.qpid.amqp_1_0.jms.jndi.PropertiesFileInitialContextFactory"
+				// and setting the "java.naming.provider.url" system property as a URL to a properties file.
+				cf = (ConnectionFactory) context.lookup(cmdLine.getOptionValue(CMD_JNDI_CF,"connectionFactory"));
+
+			}catch(Exception e){
+				throw new RuntimeException(e);
+			}
+		}
 		
 		if( user != null && password != null){
 			conn = (Connection) cf.createConnection(user, password);

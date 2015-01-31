@@ -36,6 +36,15 @@ public class AOpenWireTest extends BaseTest{
 
 	private String CMD_LINE_COMMON = getConnectCommand();
 
+	@Test
+	public void JndiConnectTest() throws Exception{
+		String cmdLine =  "--jndi openwire/jndi.properties -" + CMD_PUT + "\"test\"" + " TEST.QUEUE";
+		a.run(cmdLine.split(" "));
+		MessageConsumer mc = session.createConsumer(testQueue);
+		TextMessage msg = (TextMessage)mc.receive(TEST_TIMEOUT);
+		assertEquals("test",msg.getText());
+	}
+
 	@Override
 	protected ConnectionFactory getConnectionFactory() {
 		return new ActiveMQConnectionFactory(AMQ_URL);
