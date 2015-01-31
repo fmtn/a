@@ -86,7 +86,7 @@ Example7. Put file foo.bar as text message on queue q, with encoding EBCDIC CP03
 A defaults to ActiveMQ default protocol, OpenWire. You can also use AMQP 1.0.
 In theory, it should work with all AMQP 1.0 compliant brokers. It does not work with older versions of AMQP.
 
-$a -A -b "amqp://guest:guest@localhost:5672" -p "foobar" q
+    $a -A -b "amqp://guest:guest@localhost:5672" -p "foobar" q
 
 
 #Use JNDI to connect
@@ -95,7 +95,7 @@ To connect in a protocol agnostic way, you can specify a JNDI file that points o
 Simply create a jndi.properties file "at classpath". Then link to it jusing the -J (--jndi) option. Please name your
 ConnectionFactory "connectionFactory". Otherwise, the name has to be supplied using the -F (--jndi-cf-name) option.
 
-$a -J jndi.properties -p "foobar" q
+    $a -J jndi.properties -p "foobar" q
 
 This way, you can even connect to non ActiveMQ/AMQP brokers. You simply need to provide a JNDI config and the client at classpath.
 
