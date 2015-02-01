@@ -38,7 +38,7 @@ public class AOpenWireTest extends BaseTest{
 
 	@Test
 	public void JndiConnectTest() throws Exception{
-		String cmdLine =  "--jndi openwire/jndi.properties -" + CMD_PUT + "\"test\"" + " TEST.QUEUE";
+		String cmdLine =  "--jndi /openwire/jndi.properties -" + CMD_PUT + "\"test\"" + " TEST.QUEUE";
 		a.run(cmdLine.split(" "));
 		MessageConsumer mc = session.createConsumer(testQueue);
 		TextMessage msg = (TextMessage)mc.receive(TEST_TIMEOUT);

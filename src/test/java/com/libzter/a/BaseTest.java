@@ -8,6 +8,8 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.jms.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -218,5 +220,58 @@ public abstract class BaseTest {
         assertEquals(expectedOut,out);
     }
 
+    @Test
+    public void testMoveSelector() throws Exception{
+        final String cmdLine = getConnectCommand() + "-" + CMD_MOVE_QUEUE + " SOURCE.QUEUE -s identity='theOne' TARGET.QUEUE";
+        MessageProducer mp = session.createProducer(sourceQueue);
 
+        Message theOne = session.createTextMessage("theOne"); // message
+        theOne.setStringProperty("identity","theOne");
+        Message theOther = session.createTextMessage("theOther"); // message
+        theOther.setStringProperty("identity","theOther");
+
+        mp.send(theOne);
+        mp.send(theOther);
+
+        a.run(cmdLine.split(" "));
+        List<TextMessage> msgs = getAllMessages(session.createConsumer(sourceQueue));
+        assertEquals(1,msgs.size());
+        assertEquals("theOther",msgs.get(0).getText());
+
+        msgs = getAllMessages(session.createConsumer(targetQueue));
+        assertEquals(1,msgs.size());
+        assertEquals("theOne",msgs.get(0).getText());
+    }
+
+    @Test
+    public void testCopySelector() throws Exception{
+        final String cmdLine = getConnectCommand() + "-" + CMD_COPY_QUEUE + " SOURCE.QUEUE -s identity='theOne' TARGET.QUEUE";
+        MessageProducer mp = session.createProducer(sourceQueue);
+
+        Message theOne = session.createTextMessage("theOne"); // message
+        theOne.setStringProperty("identity","theOne");
+        Message theOther = session.createTextMessage("theOther"); // message
+        theOther.setStringProperty("identity","theOther");
+
+        mp.send(theOne);
+        mp.send(theOther);
+
+        a.run(cmdLine.split(" "));
+        List<TextMessage> msgs = getAllMessages(session.createConsumer(sourceQueue));
+        assertEquals(2,msgs.size());
+
+        msgs = getAllMessages(session.createConsumer(targetQueue));
+        assertEquals(1,msgs.size());
+        assertEquals("theOne",msgs.get(0).getText());
+    }
+    
+
+    protected List<TextMessage> getAllMessages(MessageConsumer mc) throws JMSException {
+        TextMessage msg = null;
+        List<TextMessage> msgs = new ArrayList<TextMessage>();
+        while( (msg = (TextMessage) mc.receive(TEST_TIMEOUT))!=null){
+            msgs.add(msg);
+        }
+        return msgs;
+    }
 }

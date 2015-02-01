@@ -193,7 +193,7 @@ A {
 			mq = tsess.createConsumer(q);
 		}
 		int count = Integer.parseInt(cmdLine.getOptionValue(CMD_COUNT,DEFAULT_COUNT_ALL));
-		int i = 0;
+		int i = 0,j = 0;
 		while(i < count || count == 0 ){
 			Message msg = mq.receive(100L);
 			if( msg == null){
@@ -201,10 +201,10 @@ A {
 			}else{
 				mp.send(msg);
 				tsess.commit();
-				++i;
+				++j;
 			}
 		}
-		output(i, " msgs moved from ", cmdLine.getOptionValue(CMD_MOVE_QUEUE), 
+		output(j, " msgs moved from ", cmdLine.getOptionValue(CMD_MOVE_QUEUE),
 				" to ",cmdLine.getArgs()[0]);
 	}
 
@@ -254,11 +254,12 @@ A {
 			// Initialize CF via JNDI.
 			Properties properties = new Properties();
 			try{
-				String correctedJndiPropertiesFile = jndi;
-				if( !jndi.startsWith("/")){
-					correctedJndiPropertiesFile = "/" + jndi;
+				// try classpath
+				InputStream propertiesStream = getClass().getResourceAsStream(jndi);
+				if( propertiesStream == null){
+					// try absolut path
+					propertiesStream = FileUtils.openInputStream(new File(jndi)); // will throw FNE if not found
 				}
-				InputStream propertiesStream = getClass().getResourceAsStream(correctedJndiPropertiesFile);
 				// Read the hello.properties JNDI properties file and use contents to create the InitialContext.
 				properties.load(propertiesStream);
 				Context context = new InitialContext(properties);

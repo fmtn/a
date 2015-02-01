@@ -25,7 +25,7 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-b <arg>] [-c
                            (default 400).
  -e,--encoding <arg>       Encoding of input file data. Default UTF-8
  -f,--find <arg>           Search for messages in queue with this value in
-                           payload. Use with browse.
+                           payload. Can be used with copy and browse.
  -F,--jndi-cf-name <arg>   Specify JNDI name for ConnectionFactory.
                            Defaults to connectionFactory. Use with -J
  -g,--get                  Get a message from destination
