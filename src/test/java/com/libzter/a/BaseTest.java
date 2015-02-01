@@ -207,14 +207,14 @@ public abstract class BaseTest {
         a.run(cmdLine.split(" "));
         String out = output.grab().replaceFirst("Operation completed in .+","");
 
-        final String expectedOut = "-----------------\n" +
-                "Message Properties\n" +
-                "Payload:\n" +
-                "test\n" +
-                "-----------------\n" +
-                "Message Properties\n" +
-                "Payload:\n" +
-                "test\n\n";
+        final String expectedOut = "-----------------" + LN +
+                "Message Properties" + LN +
+                "Payload:" + LN +
+                "test" + LN +
+                "-----------------" + LN +
+                "Message Properties" + LN +
+                "Payload:" + LN +
+                "test" + LN + LN;
         assertEquals(expectedOut,out);
     }
 
