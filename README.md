@@ -99,6 +99,8 @@ ConnectionFactory "connectionFactory". Otherwise, the name has to be supplied us
 
 This way, you can even connect to non ActiveMQ/AMQP brokers. You simply need to provide a JNDI config and the client at classpath.
 
+For an example connecting to IBM WebSphere MQ, check this out: http://www.thisintegration.com/use-a-with-websphere-mq/
+
 #Build
 
     $mvn install
