@@ -14,6 +14,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.libzter.a.A.*;
 import static com.libzter.a.A.CMD_GET;
@@ -245,18 +247,18 @@ public abstract class BaseTest {
 
     @Test
     public void testCopySelector() throws Exception{
-        final String cmdLine = getConnectCommand() + "-" + CMD_COPY_QUEUE + " SOURCE.QUEUE -s identity='theOne' TARGET.QUEUE";
+        final String cmdLine = getConnectCommand() + "-" + CMD_COPY_QUEUE + " SOURCE.QUEUE -s \"identity='the One'\" TARGET.QUEUE";
         MessageProducer mp = session.createProducer(sourceQueue);
 
         Message theOne = session.createTextMessage("theOne"); // message
-        theOne.setStringProperty("identity","theOne");
+        theOne.setStringProperty("identity","the One");
         Message theOther = session.createTextMessage("theOther"); // message
         theOther.setStringProperty("identity","theOther");
 
         mp.send(theOne);
         mp.send(theOther);
 
-        a.run(cmdLine.split(" "));
+        a.run(splitCmdLine(cmdLine));
         List<TextMessage> msgs = getAllMessages(session.createConsumer(sourceQueue));
         assertEquals(2,msgs.size());
 
@@ -264,7 +266,25 @@ public abstract class BaseTest {
         assertEquals(1,msgs.size());
         assertEquals("theOne",msgs.get(0).getText());
     }
-    
+
+    /**
+     * Needed to split command line arguments by space, but not quoted.
+     * @param cmdLine command line
+     * @return the arguments.
+     */
+    protected String[] splitCmdLine(String cmdLine){
+        List<String> matchList = new ArrayList<String>();
+        Pattern regex = Pattern.compile("[^\\s\"]+|\"([^\"]*)\"");
+        Matcher regexMatcher = regex.matcher(cmdLine);
+        while (regexMatcher.find()) {
+            if (regexMatcher.group(1) != null) {
+                matchList.add(regexMatcher.group(1));
+            } else {
+                matchList.add(regexMatcher.group());
+            }
+        }
+        return matchList.toArray(new String[0]);
+    }
 
     protected List<TextMessage> getAllMessages(MessageConsumer mc) throws JMSException {
         TextMessage msg = null;
