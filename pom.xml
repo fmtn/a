@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>co.nordlander.a</groupId>
   <artifactId>a</artifactId>
-  <version>1.1.1-SNAPSHOT</version>
+  <version>1.2.0</version>
   
   <properties>
   	<activemq.version>5.12.1</activemq.version>
@@ -134,8 +134,8 @@
         <version>${activemq.version}</version>
         <scope>test</scope>
     </dependency>
-    
-     <dependency>
+
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.11</version>

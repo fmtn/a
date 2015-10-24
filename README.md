@@ -99,8 +99,6 @@ ConnectionFactory "connectionFactory". Otherwise, the name has to be supplied us
 
 This way, you can even connect to non ActiveMQ/AMQP brokers. You simply need to provide a JNDI config and the client at classpath.
 
-For an example connecting to IBM WebSphere MQ, check this out: http://www.thisintegration.com/use-a-with-websphere-mq/
-
 #Build
 
     $mvn install
@@ -110,7 +108,7 @@ For an example connecting to IBM WebSphere MQ, check this out: http://www.thisin
 2. create a file called "a" on your path (~/bin/a or what have you)
 ```  
 #!/bin/sh
-java -jar ~/bin/a-1.0.0-SNAPSHOT-jar-with-dependencies.jar "$@"
+java -jar ~/bin/a-1.2.0-jar-with-dependencies.jar "$@"
 ```
 3. chmod +x a
 4. Run a from any place.
@@ -120,7 +118,7 @@ java -jar ~/bin/a-1.0.0-SNAPSHOT-jar-with-dependencies.jar "$@"
 2. create a file called "a.bat" on your path, i.e. c:\bin
 ```
 @echo off
-java -jar c:\bin\a-1.0.0-SNAPSHOT-jar-with-dependencies.jar %*
+java -jar c:\bin\a-1.2.0-jar-with-dependencies.jar %*
 ```
 3. Run from any place.
 
@@ -129,6 +127,6 @@ java -jar c:\bin\a-1.0.0-SNAPSHOT-jar-with-dependencies.jar %*
 Given you have a truststore and a keystore in JKS format, you can edit your a start script, or run it manually like this.
 Note that the -Djavax parameters has to come before -jar. 
 ```
-java -Djavax.net.ssl.keyStore=/Users/petter/client.jks -Djavax.net.ssl.keyStorePassword=password -Djavax.net.ssl.trustStore=/Users/petter/truststore.jks -Djavax.net.ssl.trustStorePassword=password -jar a-1.0.2-jar-with-dependencies.jar -b ssl://example.org:61618 MY.QUEUE 
+java -Djavax.net.ssl.keyStore=/Users/petter/client.jks -Djavax.net.ssl.keyStorePassword=password -Djavax.net.ssl.trustStore=/Users/petter/truststore.jks -Djavax.net.ssl.trustStorePassword=password -jar a-1.2.0-jar-with-dependencies.jar -b ssl://example.org:61618 MY.QUEUE 
 
 ```
