@@ -1,4 +1,4 @@
-package com.libzter.a;
+package co.nordlander.a;
 
 /**
  * Output of data from A. 

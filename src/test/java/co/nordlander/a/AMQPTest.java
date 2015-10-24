@@ -1,4 +1,4 @@
-package com.libzter.a;
+package co.nordlander.a;
 
 import org.apache.qpid.amqp_1_0.jms.impl.ConnectionFactoryImpl;
 import org.junit.Test;
@@ -14,9 +14,9 @@ import javax.jms.TextMessage;
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 
-import static com.libzter.a.A.CMD_AMQP;
-import static com.libzter.a.A.CMD_BROKER;
-import static com.libzter.a.A.CMD_PUT;
+import static co.nordlander.a.A.CMD_AMQP;
+import static co.nordlander.a.A.CMD_BROKER;
+import static co.nordlander.a.A.CMD_PUT;
 
 /**
  * Test class to test basic operations using AMQP transport.

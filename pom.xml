@@ -159,7 +159,7 @@
 			  <configuration>
 			    <archive>
 			      <manifest>
-			        <mainClass>com.libzter.a.A</mainClass>
+			        <mainClass>co.nordlander.a.A</mainClass>
 			      </manifest>
 			    </archive>
 			    <descriptorRefs>

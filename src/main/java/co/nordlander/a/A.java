@@ -1,4 +1,4 @@
-package com.libzter.a;
+package co.nordlander.a;
 
 import java.io.*;
 import java.net.MalformedURLException;

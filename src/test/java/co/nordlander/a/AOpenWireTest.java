@@ -1,10 +1,10 @@
-package com.libzter.a;
+package co.nordlander.a;
 
-import static com.libzter.a.A.CMD_BROKER;
-import static com.libzter.a.A.CMD_GET;
-import static com.libzter.a.A.CMD_PUT;
-import static com.libzter.a.A.CMD_WAIT;
-import static com.libzter.a.A.CMD_PRIORITY;
+import static co.nordlander.a.A.CMD_BROKER;
+import static co.nordlander.a.A.CMD_GET;
+import static co.nordlander.a.A.CMD_PUT;
+import static co.nordlander.a.A.CMD_WAIT;
+import static co.nordlander.a.A.CMD_PRIORITY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

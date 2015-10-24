@@ -1,4 +1,4 @@
-package com.libzter.a;
+package co.nordlander.a;
 
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.command.ActiveMQDestination;
@@ -17,9 +17,9 @@ import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.libzter.a.A.*;
-import static com.libzter.a.A.CMD_GET;
-import static com.libzter.a.A.CMD_WAIT;
+import static co.nordlander.a.A.*;
+import static co.nordlander.a.A.CMD_GET;
+import static co.nordlander.a.A.CMD_WAIT;
 import static org.junit.Assert.*;
 
 /**

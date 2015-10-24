@@ -1,4 +1,4 @@
-package com.libzter.a;
+package co.nordlander.a;
 
 /**
  *      Need to grab stdout somehow during tests.
