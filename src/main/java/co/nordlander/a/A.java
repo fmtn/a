@@ -27,6 +27,7 @@ import javax.naming.InitialContext;
 import javax.naming.Context;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -60,8 +61,10 @@ A {
 			System.out.println("");
 		}
 	};
-	
+
+   public static String CMD_OPENWIRE = "O";
 	public static String CMD_AMQP = "A";
+   public static String CMD_ARTEMIS_CORE = "a";
 	public static String CMD_BROKER = "b";
 	public static String CMD_GET = "g";
 	public static String CMD_PUT = "p";
@@ -89,6 +92,12 @@ A {
 	public static String TYPE_TEXT = "text";
 	public static String DEFAULT_TYPE = TYPE_TEXT;
 	public static String DEFAULT_DATE_FORMAT = "yyyy MM dd HH:mm:ss";
+
+   public enum Protocol{
+      OpenWire,
+      AMQP,
+      ArtemisCore
+   }
 
 	public static void main(String[] args) throws ParseException, InterruptedException{
 		A a = new A();
@@ -118,6 +127,8 @@ A {
 		opts.addOption(CMD_AMQP,"amqp",false,"Set protocol to AMQP. Defaults to OpenWire");
 		opts.addOption(CMD_JNDI,"jndi",true,"Connect via JNDI. Overrides -b and -A options. Specify context file on classpath");
 		opts.addOption(CMD_JNDI_CF,"jndi-cf-name",true,"Specify JNDI name for ConnectionFactory. Defaults to connectionFactory. Use with -J");
+      opts.addOption(CMD_ARTEMIS_CORE,"artemis-core",false,"Set protocol to ActiveMQ Artemis Core. Defaults to OpenWire");
+      opts.addOption(CMD_OPENWIRE,"openwire",false,"Set protocol to OpenWire. This is default protocol");
 
 		@SuppressWarnings("static-access")
 		Option property = OptionBuilder.withArgName("property=value" )
@@ -137,11 +148,18 @@ A {
 		CommandLineParser cmdParser = new PosixParser();
 
 		try {
-			cmdLine = cmdParser.parse(opts, args);
+         cmdLine = cmdParser.parse(opts, args);
+         Protocol protocol = Protocol.OpenWire;
+         if( cmdLine.hasOption(CMD_AMQP)){
+            protocol = Protocol.AMQP;
+         }else if(cmdLine.hasOption(CMD_ARTEMIS_CORE)){
+            protocol = Protocol.ArtemisCore;
+         }
+
 			connect(cmdLine.getOptionValue(CMD_BROKER, "tcp://localhost:61616"),
 					cmdLine.getOptionValue(CMD_USER),
 					cmdLine.getOptionValue(CMD_PASS),
-					cmdLine.hasOption(CMD_AMQP),
+					protocol,
 					cmdLine.getOptionValue(CMD_JNDI,""));
 
 			 long startTime = System.currentTimeMillis();
@@ -247,9 +265,19 @@ A {
 		output(j," msgs copied from ", cmdLine.getOptionValue(CMD_COPY_QUEUE), " to ", cmdLine.getArgs()[0]);
 	}
 
-	protected void connect(String url,String user, String password,boolean amqp,String jndi) throws JMSException {
-		if( jndi == null || jndi == ""){
-			cf = amqp ? createAMQPCF(url) : (new ActiveMQConnectionFactory(url));
+	protected void connect(String url,String user, String password,Protocol protocol,String jndi) throws Exception {
+		if( jndi == null || jndi.equals("")){
+         switch (protocol){
+            case AMQP:
+               cf = createAMQPCF(url);
+               break;
+            case OpenWire:
+               cf = new ActiveMQConnectionFactory(url);
+               break;
+            case ArtemisCore:
+               cf = ActiveMQJMSClient.createConnectionFactory(url,"");
+               break;
+         }
 		}else {
 			// Initialize CF via JNDI.
 			Properties properties = new Properties();
@@ -260,7 +288,7 @@ A {
 					// try absolut path
 					propertiesStream = FileUtils.openInputStream(new File(jndi)); // will throw FNE if not found
 				}
-				// Read the hello.properties JNDI properties file and use contents to create the InitialContext.
+				// Read the hello.properties JNDI propewsrties file and use contents to create the InitialContext.
 				properties.load(propertiesStream);
 				Context context = new InitialContext(properties);
 				// Alternatively, JNDI information can be supplied by setting the "java.naming.factory.initial"
@@ -274,7 +302,7 @@ A {
 		}
 		
 		if( user != null && password != null){
-			conn = (Connection) cf.createConnection(user, password);
+			conn = cf.createConnection(user, password);
 		}else{
 			conn = cf.createConnection();
 		}
@@ -291,7 +319,7 @@ A {
 		}
 	}
 
-	protected void executeGet(CommandLine cmdLine) throws JMSException, UnsupportedEncodingException, IOException {
+	protected void executeGet(CommandLine cmdLine) throws JMSException, IOException {
 		Destination dest = createDestination(cmdLine.getArgs()[0]);
 		MessageConsumer mq = null;
 		if( cmdLine.hasOption(CMD_SELECTOR)){ // Selectors
@@ -299,8 +327,8 @@ A {
 		}else{
 			mq = sess.createConsumer(dest);
 		}
-		int count = Integer.parseInt(cmdLine.getOptionValue(CMD_COUNT,DEFAULT_COUNT_GET));
-		long wait = Long.parseLong(cmdLine.getOptionValue(CMD_WAIT,DEFAULT_WAIT));
+		int count = Integer.parseInt(cmdLine.getOptionValue(CMD_COUNT, DEFAULT_COUNT_GET));
+		long wait = Long.parseLong(cmdLine.getOptionValue(CMD_WAIT, DEFAULT_WAIT));
 		int i = 0;
 		while(i < count || i == 0 ){
 			Message msg = mq.receive(wait);
@@ -327,20 +355,18 @@ A {
 			// Load file.
 			byte[] bytes = FileUtils.readFileToByteArray(new File(data.substring(1)));
 			if( type.equals(TYPE_TEXT)){
-				TextMessage textMsg = sess.createTextMessage(new String(bytes,encoding));
-				outMsg = textMsg;
+            outMsg = sess.createTextMessage(new String(bytes,encoding));
 			}else{
 				BytesMessage bytesMsg = sess.createBytesMessage();
 				bytesMsg.writeBytes(bytes);
 				outMsg = bytesMsg;
 			}
 		}else{
-			TextMessage textMsg = sess.createTextMessage(data);
-			outMsg = textMsg;
+         outMsg = sess.createTextMessage(data);
 		}
 		
 		MessageProducer mp = sess.createProducer(createDestination(cmdLine.getArgs()[0]));
-		if( cmdLine.hasOption("n")){;
+		if( cmdLine.hasOption("n")){
 			mp.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 		}
 
@@ -388,7 +414,7 @@ A {
 		}
 	}
 
-	protected void executeBrowse(CommandLine cmdLine) throws JMSException, UnsupportedEncodingException, IOException {
+	protected void executeBrowse(CommandLine cmdLine) throws JMSException, IOException {
 		Queue q = sess.createQueue(cmdLine.getArgs()[0]);
 		QueueBrowser qb = null;
 		// Selector aware?
@@ -400,7 +426,7 @@ A {
 
 		@SuppressWarnings("rawtypes")
 		Enumeration en = qb.getEnumeration();
-		int count = Integer.parseInt(cmdLine.getOptionValue(CMD_COUNT,DEFAULT_COUNT_ALL));
+		int count = Integer.parseInt(cmdLine.getOptionValue(CMD_COUNT, DEFAULT_COUNT_ALL));
 		int i = 0;
 		while(en.hasMoreElements() && (i < count || count == 0 )){
 			Object obj = en.nextElement();
@@ -421,7 +447,7 @@ A {
 		}
 	}
 
-	protected void outputMessage(Message msg,boolean printJMSHeaders) throws JMSException, UnsupportedEncodingException, IOException {
+	protected void outputMessage(Message msg,boolean printJMSHeaders) throws JMSException, IOException {
 		output("-----------------");
 		if( printJMSHeaders ){
 			outputHeaders(msg);
@@ -431,7 +457,7 @@ A {
 		FileOutputStream fos = null;
 		File file = null;
 		if( cmdLine.hasOption(CMD_OUTPUT)){
-			file = getNextFilename(cmdLine.getOptionValue(CMD_OUTPUT,"amsg"),0);
+			file = getNextFilename(cmdLine.getOptionValue(CMD_OUTPUT, "amsg"),0);
 			if( file != null ) {
 				fos = new FileOutputStream(file);
 			}
@@ -440,7 +466,7 @@ A {
 		if( msg instanceof TextMessage){
 			TextMessage txtMsg = (TextMessage)msg;
 			if( fos != null){
-				fos.write(txtMsg.getText().getBytes(cmdLine.getOptionValue(CMD_ENCODING,Charset.defaultCharset().name())));
+				fos.write(txtMsg.getText().getBytes(cmdLine.getOptionValue(CMD_ENCODING, Charset.defaultCharset().name())));
 				fos.close();
 				output("Payload written to file ", file.getAbsolutePath());
 			}else{
@@ -486,7 +512,7 @@ A {
 	protected void outputHeaders(Message msg){
 		output("Message Headers");
 		try {
-		    String deliveryMode = msg.getJMSDeliveryMode() == DeliveryMode.PERSISTENT?"persistent":"non-persistent";
+		    String deliveryMode = msg.getJMSDeliveryMode() == DeliveryMode.PERSISTENT ? "persistent" : "non-persistent";
 		    output("  JMSCorrelationID: " + msg.getJMSCorrelationID());
 			output("  JMSExpiration: " + timestampToString(msg.getJMSExpiration()));
 			output("  JMSDeliveryMode: " + deliveryMode);

@@ -1,5 +1,6 @@
 package co.nordlander.a;
 
+import org.apache.activemq.command.ActiveMQDestination;
 import org.apache.qpid.amqp_1_0.jms.impl.ConnectionFactoryImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,4 +53,14 @@ public class AMQPTest extends BaseTest {
     protected String getConnectCommand() {
         return "-" + CMD_AMQP + " -" + CMD_BROKER + " " + AMQ_AMQP_URL + " ";
     }
+
+   @Override
+   protected void clearBroker() throws Exception {
+      // Clear
+      for(ActiveMQDestination destination : amqBroker.getRegionBroker().getDestinations()){
+         amqBroker.getRegionBroker().removeDestination(
+            amqBroker.getRegionBroker().getAdminConnectionContext(),
+            destination,1);
+      }
+   }
 }

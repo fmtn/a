@@ -40,7 +40,23 @@
       <artifactId>qpid-amqp-1-0-client-jms</artifactId>
       <version>0.32</version>
     </dependency>
-  	
+    <dependency>
+      <groupId>org.apache.activemq</groupId>
+      <artifactId>artemis-jms-client</artifactId>
+      <version>1.1.0</version>
+    </dependency>
+     <dependency>
+        <groupId>org.apache.activemq</groupId>
+        <artifactId>artemis-jms-server</artifactId>
+        <version>1.1.0</version>
+        <scope>test</scope>
+     </dependency>
+     <dependency>
+        <groupId>org.jboss.logmanager</groupId>
+        <artifactId>jboss-logmanager</artifactId>
+        <version>1.5.3.Final</version>
+        <scope>test</scope>
+     </dependency>
   	
   	<!-- Test dependencies -->
   	<dependency>

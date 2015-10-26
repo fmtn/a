@@ -54,4 +54,14 @@ public class AOpenWireTest extends BaseTest{
 	protected String getConnectCommand() {
 		return "-" + CMD_BROKER + " " + AMQ_URL + " ";
 	}
+
+   @Override
+   protected void clearBroker() throws Exception {
+      // Clear
+      for(ActiveMQDestination destination : amqBroker.getRegionBroker().getDestinations()){
+         amqBroker.getRegionBroker().removeDestination(
+            amqBroker.getRegionBroker().getAdminConnectionContext(),
+            destination,1);
+      }
+   }
 }

@@ -49,6 +49,7 @@ public abstract class BaseTest {
 
     protected abstract ConnectionFactory getConnectionFactory();
     protected abstract String getConnectCommand();
+    protected abstract void clearBroker() throws Exception;
 
 
     @Before
@@ -62,12 +63,7 @@ public abstract class BaseTest {
         output = new ATestOutput();
         a.output = output;
 
-        // Clear
-        for(ActiveMQDestination destination : amqBroker.getRegionBroker().getDestinations()){
-            amqBroker.getRegionBroker().removeDestination(
-                    amqBroker.getRegionBroker().getAdminConnectionContext(),
-                    destination,1);
-        }
+        clearBroker();
 
         testTopic = session.createTopic("TEST.TOPIC");
         testQueue = session.createQueue("TEST.QUEUE");
@@ -86,7 +82,8 @@ public abstract class BaseTest {
 
     @Test
     public void testPutQueue() throws Exception{
-        String cmdLine = getConnectCommand() + "-" + CMD_PUT + "\"test\"" + " TEST.QUEUE";
+        String cmdLine = getConnectCommand() + "-" + CMD_PUT + " \"test\"" + " TEST.QUEUE";
+        System.out.println("Testing cmd: " + cmdLine);
         a.run(cmdLine.split(" "));
         MessageConsumer mc = session.createConsumer(testQueue);
         TextMessage msg = (TextMessage)mc.receive(TEST_TIMEOUT);
