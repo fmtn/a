@@ -9,12 +9,14 @@ Used to send, browse and put messages on queues.
 
 
 ```
-usage: java -jar a-<version>-with-dependencies.jar [-A] [-b <arg>] [-c
-       <arg>] [-C <arg>] [-e <arg>] [-f <arg>] [-F <arg>] [-g] [-H
+usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
+       [-c <arg>] [-C <arg>] [-e <arg>] [-f <arg>] [-F <arg>] [-g] [-H
        <property=value>] [-i <arg>] [-j] [-J <arg>] [-M <arg>] [-n] [-o
-       <arg>] [-P <arg>] [-p <arg>] [-r <arg>] [-s <arg>] [-t <arg>] [-U
-       <arg>] [-w <arg>]
+       <arg>] [-O] [-p <arg>] [-P <arg>] [-r <arg>] [-s <arg>] [-t <arg>]
+       [-U <arg>] [-w <arg>]
  -A,--amqp                 Set protocol to AMQP. Defaults to OpenWire
+ -a,--artemis-core         Set protocol to ActiveMQ Artemis Core. Defaults
+                           to OpenWire
  -b,--broker <arg>         URL to broker. defaults to:
                            tcp://localhost:61616
  -c,--count <arg>          A number of messages to browse,get or put (put
@@ -25,7 +27,7 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-b <arg>] [-c
                            (default 400).
  -e,--encoding <arg>       Encoding of input file data. Default UTF-8
  -f,--find <arg>           Search for messages in queue with this value in
-                           payload. Can be used with copy and browse.
+                           payload. Use with browse.
  -F,--jndi-cf-name <arg>   Specify JNDI name for ConnectionFactory.
                            Defaults to connectionFactory. Use with -J
  -g,--get                  Get a message from destination
@@ -41,9 +43,11 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-b <arg>] [-c
                            a -1.<ext> will be added to the file.
                            BytesMessage will be written as-is, TextMessage
                            will be written in UTF-8
- -P,--pass <arg>           Password to connect to broker
+ -O,--openwire             Set protocol to OpenWire. This is default
+                           protocol
  -p,--put <arg>            Put a message. Specify data. if starts with @,
                            a file is assumed and loaded
+ -P,--pass <arg>           Password to connect to broker
  -r,--reply-to <arg>       Set reply to destination, i.e. queue:reply
  -s,--selector <arg>       Browse or get with selector
  -t,--type <arg>           Message type to put, [bytes, text] - defaults
@@ -88,6 +92,12 @@ In theory, it should work with all AMQP 1.0 compliant brokers. It does not work 
 
     $a -A -b "amqp://guest:guest@localhost:5672" -p "foobar" q
 
+#Use Artemis Core
+Use Artemis core protocol (HornetQ) with the -a option.
+
+    $a -a -b "tcp://localhost:61616" -p "foobar" q
+
+Please note that this won't auto deploy the queue in current versions of Artemis. Using OpenWire will autodeploy the queue.
 
 #Use JNDI to connect
 To connect in a protocol agnostic way, you can specify a JNDI file that points out the JMS provider and settings.
