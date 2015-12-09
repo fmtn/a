@@ -114,7 +114,7 @@ A {
 		opts.addOption(CMD_NON_PERSISTENT,"non-persistent",false,"Set message to non persistent.");
 		opts.addOption(CMD_REPLY_TO,"reply-to",true,"Set reply to destination, i.e. queue:reply");
 		opts.addOption(CMD_OUTPUT,"output",true,"file to write payload to. If multiple messages, a -1.<ext> will be added to the file. BytesMessage will be written as-is, TextMessage will be written in UTF-8");
-		opts.addOption(CMD_COUNT,"count",true,"A number of messages to browse,get or put (put will put the same message <count> times). 0 means all messages.");
+		opts.addOption(CMD_COUNT,"count",true,"A number of messages to browse,get,move or put (put will put the same message <count> times). 0 means all messages.");
 		opts.addOption(CMD_JMS_HEADERS,"jms-headers",false,"Print JMS headers");
 		opts.addOption(CMD_COPY_QUEUE,"copy-queue",true,"Copy all messages from this to target. Limited by maxBrowsePageSize in broker settings (default 400).");
 		opts.addOption(CMD_MOVE_QUEUE,"move-queue",true,"Move all messages from this to target");
@@ -211,8 +211,8 @@ A {
 			mq = tsess.createConsumer(q);
 		}
 		int count = Integer.parseInt(cmdLine.getOptionValue(CMD_COUNT,DEFAULT_COUNT_ALL));
-		int i = 0,j = 0;
-		while(i < count || count == 0 ){
+		int j = 0;
+		while(j < count || count == 0 ){
 			Message msg = mq.receive(100L);
 			if( msg == null){
 				break;
