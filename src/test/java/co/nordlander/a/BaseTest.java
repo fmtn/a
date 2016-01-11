@@ -1,7 +1,6 @@
 package co.nordlander.a;
 
 import org.apache.activemq.broker.BrokerService;
-import org.apache.activemq.command.ActiveMQDestination;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

@@ -1,6 +1,10 @@
 package co.nordlander.a;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.nio.charset.Charset;
 import java.text.Format;
@@ -9,6 +13,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -23,11 +28,13 @@ import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.naming.InitialContext;
 import javax.naming.Context;
+import javax.naming.InitialContext;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
+import org.apache.activemq.command.ActiveMQQueue;
+import org.apache.activemq.command.ActiveMQTopic;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -49,11 +56,11 @@ A {
 	private static final Logger logger = LoggerFactory.getLogger(A.class);
 	protected ConnectionFactory cf;
 	protected Connection conn;
-	protected Session sess,tsess;
+	protected Session sess, tsess;
 	protected CommandLine cmdLine;
 	
 	// Customizable output
-	protected AOutput output = new AOutput(){
+	protected AOutput output = new AOutput() {
 		public void output(Object... args) {
 			for(Object arg : args){
 				System.out.print(arg.toString());
@@ -62,9 +69,9 @@ A {
 		}
 	};
 
-   public static String CMD_OPENWIRE = "O";
+    public static String CMD_OPENWIRE = "O";
 	public static String CMD_AMQP = "A";
-   public static String CMD_ARTEMIS_CORE = "a";
+    public static String CMD_ARTEMIS_CORE = "a";
 	public static String CMD_BROKER = "b";
 	public static String CMD_GET = "g";
 	public static String CMD_PUT = "p";
@@ -86,6 +93,7 @@ A {
 	public static String CMD_PRIORITY = "i";
 	public static String CMD_JNDI = "J";
 	public static String CMD_JNDI_CF = "F";
+	public static String CMD_LIST_QUEUES = "l";
 	public static String DEFAULT_COUNT_GET = "1";
 	public static String DEFAULT_COUNT_ALL = "0";
 	public static String DEFAULT_WAIT = "50";
@@ -127,9 +135,10 @@ A {
 		opts.addOption(CMD_AMQP,"amqp",false,"Set protocol to AMQP. Defaults to OpenWire");
 		opts.addOption(CMD_JNDI,"jndi",true,"Connect via JNDI. Overrides -b and -A options. Specify context file on classpath");
 		opts.addOption(CMD_JNDI_CF,"jndi-cf-name",true,"Specify JNDI name for ConnectionFactory. Defaults to connectionFactory. Use with -J");
-      opts.addOption(CMD_ARTEMIS_CORE,"artemis-core",false,"Set protocol to ActiveMQ Artemis Core. Defaults to OpenWire");
-      opts.addOption(CMD_OPENWIRE,"openwire",false,"Set protocol to OpenWire. This is default protocol");
-
+        opts.addOption(CMD_ARTEMIS_CORE,"artemis-core",false,"Set protocol to ActiveMQ Artemis Core. Defaults to OpenWire");
+        opts.addOption(CMD_OPENWIRE,"openwire",false,"Set protocol to OpenWire. This is default protocol");
+        opts.addOption(CMD_LIST_QUEUES, "list-queues", false, "List queues and topics on broker (OpenWire only)");
+        
 		@SuppressWarnings("static-access")
 		Option property = OptionBuilder.withArgName("property=value" )
                 .hasArgs(2)
@@ -172,6 +181,8 @@ A {
 				executeCopy(cmdLine);
 			}else if( cmdLine.hasOption(CMD_MOVE_QUEUE)){
 				executeMove(cmdLine);
+			}else if( cmdLine.hasOption(CMD_LIST_QUEUES)){
+				executeListQueues(cmdLine);
 			}else{
 				executeBrowse(cmdLine);
 			}
@@ -190,8 +201,13 @@ A {
 			return;
 		} finally{
 			try {
-				sess.close();
-				conn.close();
+				if( sess != null ){
+					sess.close();
+				}
+				
+				if( conn != null ){
+					conn.close();
+				}
 			} catch (JMSException e2) {
 				e2.printStackTrace();
 			}
@@ -319,7 +335,7 @@ A {
 		}
 	}
 
-	protected void executeGet(CommandLine cmdLine) throws JMSException, IOException {
+	protected void executeGet(final CommandLine cmdLine) throws JMSException, IOException {
 		Destination dest = createDestination(cmdLine.getArgs()[0]);
 		MessageConsumer mq = null;
 		if( cmdLine.hasOption(CMD_SELECTOR)){ // Selectors
@@ -342,7 +358,7 @@ A {
 		}
 	}
 
-	protected void executePut(CommandLine cmdLine) throws IOException, JMSException {
+	protected void executePut(final CommandLine cmdLine) throws IOException, JMSException {
 		// Check if we have properties to put
 		Properties props = cmdLine.getOptionProperties(CMD_SET_HEADER);
 		String type = cmdLine.getOptionValue(CMD_TYPE,DEFAULT_TYPE);
@@ -402,20 +418,20 @@ A {
 	}
 
 	// Accepts a plain name, queue://<name>, topic://<name> etc.
-	protected Destination createDestination(String name) throws JMSException {
+	protected Destination createDestination(final String name) throws JMSException {
 		// support queue:// as well.
-		name = name.replace("/","");
-		if( name.toLowerCase().startsWith("queue:")){
-			return sess.createQueue(name.substring("queue:".length()));
-		}else if( name.toLowerCase().startsWith("topic:")){
-			return sess.createTopic(name.substring("topic:".length()));
+		final String correctedName = name.replace("/","");
+		if( correctedName.toLowerCase().startsWith("queue:")){
+			return sess.createQueue(correctedName);
+		}else if( correctedName.toLowerCase().startsWith("topic:")){
+			return sess.createTopic(correctedName.substring("topic:".length()));
 		}else{
-			return sess.createQueue(name);
+			return sess.createQueue(correctedName);
 		}
 	}
 
-	protected void executeBrowse(CommandLine cmdLine) throws JMSException, IOException {
-		Queue q = sess.createQueue(cmdLine.getArgs()[0]);
+	protected void executeBrowse(final CommandLine cmdLine) throws JMSException, IOException {
+		final Queue q = sess.createQueue(cmdLine.getArgs()[0]);
 		QueueBrowser qb = null;
 		// Selector aware?
 		if( cmdLine.hasOption(CMD_SELECTOR)){
@@ -425,7 +441,7 @@ A {
 		}
 
 		@SuppressWarnings("rawtypes")
-		Enumeration en = qb.getEnumeration();
+		final Enumeration en = qb.getEnumeration();
 		int count = Integer.parseInt(cmdLine.getOptionValue(CMD_COUNT, DEFAULT_COUNT_ALL));
 		int i = 0;
 		while(en.hasMoreElements() && (i < count || count == 0 )){
@@ -444,6 +460,33 @@ A {
 				outputMessage(msg,cmdLine.hasOption(CMD_JMS_HEADERS));
 			}
 			++i;
+		}
+	}
+	
+	protected void executeListQueues(final CommandLine cmdLine) throws JMSException {
+		if(conn instanceof org.apache.activemq.ActiveMQConnection) {
+			final org.apache.activemq.ActiveMQConnection amqConn = (org.apache.activemq.ActiveMQConnection)conn;
+			
+			final Set<ActiveMQQueue> queues = amqConn.getDestinationSource().getQueues();
+			final Set<ActiveMQTopic> topics = amqConn.getDestinationSource().getTopics();
+			
+			if( !queues.isEmpty()) {
+				output("Queues:");
+				for(ActiveMQQueue q : queues){
+					output(q.getPhysicalName());
+				}
+			}
+			
+			if( !topics.isEmpty()) {
+				output("Topics:");
+				
+				for(ActiveMQTopic t : topics){
+					output(t.getTopicName());
+				}
+			}
+			
+		}else{
+			throw new RuntimeException("Only ActiveMQ 5.x connections support listing queues");
 		}
 	}
 

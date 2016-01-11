@@ -13,8 +13,6 @@ import javax.jms.ConnectionFactory;
 import javax.jms.MessageConsumer;
 import javax.jms.TextMessage;
 import java.net.MalformedURLException;
-import java.nio.charset.StandardCharsets;
-
 import static co.nordlander.a.A.CMD_AMQP;
 import static co.nordlander.a.A.CMD_BROKER;
 import static co.nordlander.a.A.CMD_PUT;

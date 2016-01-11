@@ -10,10 +10,10 @@ Used to send, browse and put messages on queues.
 
 ```
 usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
-       [-c <arg>] [-C <arg>] [-e <arg>] [-f <arg>] [-F <arg>] [-g] [-H
-       <property=value>] [-i <arg>] [-j] [-J <arg>] [-M <arg>] [-n] [-o
-       <arg>] [-O] [-p <arg>] [-P <arg>] [-r <arg>] [-s <arg>] [-t <arg>]
-       [-U <arg>] [-w <arg>]
+       [-C <arg>] [-c <arg>] [-e <arg>] [-F <arg>] [-f <arg>] [-g] [-H
+       <property=value>] [-i <arg>] [-J <arg>] [-j] [-l] [-M <arg>] [-n]
+       [-O] [-o <arg>] [-P <arg>] [-p <arg>] [-r <arg>] [-s <arg>] [-t
+       <arg>] [-U <arg>] [-w <arg>]
  -A,--amqp                 Set protocol to AMQP. Defaults to OpenWire
  -a,--artemis-core         Set protocol to ActiveMQ Artemis Core. Defaults
                            to OpenWire
@@ -37,6 +37,7 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
  -j,--jms-headers          Print JMS headers
  -J,--jndi <arg>           Connect via JNDI. Overrides -b and -A options.
                            Specify context file on classpath
+ -l,--list-queues          List queues and topics on broker (OpenWire only)
  -M,--move-queue <arg>     Move all messages from this to target
  -n,--non-persistent       Set message to non persistent.
  -o,--output <arg>         file to write payload to. If multiple messages,
