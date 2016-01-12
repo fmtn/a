@@ -57,7 +57,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.qpid.amqp_1_0.jms.impl.ConnectionFactoryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
 
 /**
  * A - An ActiveMQ/JMS testing and admin tool
