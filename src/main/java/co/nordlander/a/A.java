@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.nio.charset.Charset;
 import java.text.Format;
@@ -36,10 +37,12 @@ import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
 import org.apache.activemq.command.ActiveMQMessage;
 import org.apache.activemq.command.ActiveMQQueue;
 import org.apache.activemq.command.ActiveMQTopic;
+import org.apache.activemq.command.BrokerInfo;
 import org.apache.activemq.command.CommandTypes;
 import org.apache.activemq.command.ConnectionInfo;
 import org.apache.activemq.command.ConsumerInfo;
 import org.apache.activemq.command.DataStructure;
+import org.apache.activemq.command.DestinationInfo;
 import org.apache.activemq.command.ProducerInfo;
 import org.apache.activemq.command.RemoveInfo;
 import org.apache.commons.cli.CommandLine;
@@ -565,6 +568,7 @@ public class A {
 
 	protected void outputMessage(Message msg, boolean printJMSHeaders)
 			throws JMSException, IOException {
+		
 		output("-----------------");
 		if (printJMSHeaders) {
 			outputHeaders(msg);
@@ -605,7 +609,7 @@ public class A {
 				output("Hex Payload:");
 				output(bytesToHex(bytes));
 			}
-		} else if (msg instanceof ActiveMQMessage) {
+		} else if (msg instanceof ActiveMQMessage) { // Typically advisory messages of internal AMQ events.
 			ActiveMQMessage cmdMsg = (ActiveMQMessage) msg;
 			displayAdvisoryMessage(cmdMsg);
 		} else {
@@ -613,71 +617,72 @@ public class A {
 		}
 	}
 
-	protected void displayAdvisoryMessage(ActiveMQMessage cmdMsg) throws IOException {
-		
-		final String originBrokerName = (String) cmdMsg.getProperty("originBrokerName");
+	protected void displayAdvisoryMessage(ActiveMQMessage cmdMsg) throws IOException, JMSException {
 		final String topic = cmdMsg.getJMSDestination().toString();
+		final String advisoryMsg = advisoryDataStructureToString(cmdMsg.getDataStructure());
+		final String advisoryType = cmdMsg.getDataStructure() != null ? "Type: " + dataStructureTypeToString(cmdMsg.getDataStructure().getDataStructureType()) : "";
+		output("Advisory on " + topic + " Type: " + advisoryType + " Info: " + advisoryMsg);
 		
-		final String startAdvisoryMsg = "Advisory (" + originBrokerName + ") Client: ";
-		
-		
-		advisoryDataStructureToString(cmdMsg.getDataStructure());
-		
-		switch(cmdMsg.getDataStructure().getDataStructureType()) {
-		case CommandTypes.PRODUCER_INFO:
-			
-			// TODO logic to handle various producerInfos.
-			ProducerInfo pi = (ProducerInfo)cmdMsg.getDataStructure();
-			
-			output("Producer " + startAdvisoryMsg + pi.getProducerId().getConnectionId() + " produces to destination: " 
-												+ pi.getDestination().toString() + " (#msgs: " + pi.getSentCount() + ")");
-			break;
-		case CommandTypes.CONSUMER_INFO:
-			// TODO logic to handle various consumer infos.
-			ConsumerInfo ci = (ConsumerInfo)cmdMsg.getDataStructure();
-			output("Consumer " + startAdvisoryMsg + ci.getConsumerId().getConnectionId() + " consumes destination: " 
-												+ ci.getDestination().toString());
-			
-			break;
-			
-		case CommandTypes.CONNECTION_INFO:
-			ConnectionInfo connInfo = (ConnectionInfo) cmdMsg.getDataStructure();
-			String connStr = connInfo.getUserName() != null ? connInfo.getUserName() + "@" + connInfo.getClientIp() : connInfo.getClientIp();
-			output("Connection " + startAdvisoryMsg + connInfo.getClientId() + " connected from: " + connStr);
-			break;
-		
-		case CommandTypes.REMOVE_INFO:
-			displayRemoveInfo( (RemoveInfo) cmdMsg.getDataStructure(),startAdvisoryMsg);
-		default:
-			output("Advisory message type: " + cmdMsg.getDataStructureType());
-		}
 	}
 	
-	protected String advisoryDataStructureToString(final DataStructure dataStructure) {
-		switch( dataStructure.getDataStructureType()) {
+	protected String advisoryDataStructureToString(final DataStructure dataStructure) throws JMSException {
 		
-		case CommandTypes.PRODUCER_INFO:
-			ProducerInfo pi = (ProducerInfo)dataStructure;
-			return "ProducerId: " + pi.getProducerId().toString() + " destination: " + pi.getDestination().toString();
+		if( dataStructure != null) {
 			
-		case CommandTypes.CONSUMER_INFO:
-			ConsumerInfo ci = (ConsumerInfo)dataStructure;
-			return "ConsumerId: " + ci.getConsumerId().toString() + " destination: " + ci.getDestination().toString();
+			switch( dataStructure.getDataStructureType()) {
 			
-		case CommandTypes.CONNECTION_INFO:
-			ConnectionInfo connInfo = (ConnectionInfo) dataStructure;
-			String connStr = connInfo.getUserName() != null ? connInfo.getUserName() + "@" + connInfo.getClientIp() : connInfo.getClientIp();
-			return "ConnectionId: " + connInfo.getConnectionId().toString() + " Connection from: " + connStr + " clientId: " + connInfo.getClientId();
-
-		case CommandTypes.REMOVE_INFO:
-			RemoveInfo removeInfo = (RemoveInfo)dataStructure;
-			return advisoryDataStructureToString(removeInfo.getObjectId());
+			case CommandTypes.PRODUCER_INFO:
+				ProducerInfo pi = (ProducerInfo)dataStructure;
+				return "ProducerId: " + pi.getProducerId().toString() + " destination: " + pi.getDestination().toString();
+				
+			case CommandTypes.CONSUMER_INFO:
+				ConsumerInfo ci = (ConsumerInfo)dataStructure;
+				return "ConsumerId: " + ci.getConsumerId().toString() + " destination: " + ci.getDestination().toString();
+				
+			case CommandTypes.CONNECTION_INFO:
+				ConnectionInfo connInfo = (ConnectionInfo) dataStructure;
+				String connStr = connInfo.getUserName() != null ? connInfo.getUserName() + "@" + connInfo.getClientIp() : connInfo.getClientIp();
+				return "ConnectionId: " + connInfo.getConnectionId().toString() + " Connection from: " + connStr + " clientId: " +  connInfo.getClientId();
+	
+			case CommandTypes.REMOVE_INFO:
+				RemoveInfo removeInfo = (RemoveInfo)dataStructure;
+				return advisoryDataStructureToString(removeInfo.getObjectId());
+				
+			case CommandTypes.ACTIVEMQ_MESSAGE:
+				ActiveMQMessage messageInfo = (ActiveMQMessage)dataStructure;
+				return "messageId: " + messageInfo.getStringProperty("originalMessageId");
 			
-		
-		default:
-			return "Advisory message type: " + dataStructure.getDataStructureType();
+			case CommandTypes.DESTINATION_INFO:
+				DestinationInfo destInfo = (DestinationInfo)dataStructure;
+				return destInfo.getDestination().getQualifiedName() + (destInfo.getOperationType() == DestinationInfo.ADD_OPERATION_TYPE ? " added" : " removed");
+				
+			case CommandTypes.BROKER_INFO:
+				BrokerInfo brokerInfo = (BrokerInfo)dataStructure;
+				return "brokerId: " + brokerInfo.getBrokerId() + " brokerName: " 
+									+ brokerInfo.getBrokerName() + " brokerURL: " + brokerInfo.getBrokerURL();
+			
+			default:
+				return "";
+			}
+		} else {
+			return "";
 		}
 		
+	}
+
+	protected String dataStructureTypeToString(byte dataStructureType)  {
+		try{
+			for(Field field : CommandTypes.class.getFields()) {
+				String name = field.getName();
+				byte value = field.getByte(null);
+				if( dataStructureType == value ) {
+					return name;
+				}
+			}
+		}catch(Exception e){
+			return "unknown";
+		}
+		return "unknown";
 	}
 
 	protected void displayRemoveInfo(final RemoveInfo removeInfo, final String startAdvisoryMsg) {

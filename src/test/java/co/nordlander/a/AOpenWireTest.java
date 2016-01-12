@@ -1,15 +1,10 @@
 package co.nordlander.a;
 
 import static co.nordlander.a.A.CMD_BROKER;
-import static co.nordlander.a.A.CMD_GET;
 import static co.nordlander.a.A.CMD_LIST_QUEUES;
 import static co.nordlander.a.A.CMD_PUT;
-import static co.nordlander.a.A.CMD_WAIT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.MessageConsumer;
@@ -53,46 +48,6 @@ public class AOpenWireTest extends BaseTest{
 		String result = output.grab();
 		assertTrue(result.contains("TEST.QUEUE"));
 		assertTrue(result.contains("TEST.TOPIC"));
-	}
-	
-	@Test
-	public void testSubscribeProducerAdvisory() throws Exception {
-		
-		final String cmdLine = getConnectCommand() + "-" + CMD_GET + " -" +
-                CMD_WAIT + " 4000" + " topic://ActiveMQ.Advisory.>";
-        Future<String> resultString = executor.submit(new Callable<String>(){
-            public String call() throws Exception {
-                a.run(cmdLine.split(" "));
-                return output.grab();
-            }
-        });
-        Thread.sleep(300); // TODO remove somehow?
-        
-        MessageProducer mp2 = session.createProducer(session.createQueue("some.queue"));
-        mp2.send(testMessage);
-        
-        MessageConsumer mc = session.createConsumer(session.createQueue("FooBar"));
-        mc.receiveNoWait();
-        String result = resultString.get();
-        assertTrue("Output expected",result.contains("produces to destination: Queue://some.queue (#msgs: 0)"));
-	}
-	
-	@Test
-	public void testSubscribeConsumerAdvisory() throws Exception {
-		
-		final String cmdLine = getConnectCommand() + "-" + CMD_GET + " -" +
-                CMD_WAIT + " 4000" + " topic://ActiveMQ.Advisory.>";
-        Future<String> resultString = executor.submit(new Callable<String>(){
-            public String call() throws Exception {
-                a.run(cmdLine.split(" "));
-                return output.grab();
-            }
-        });
-        Thread.sleep(300); // TODO remove somehow?
-        MessageConsumer mc = session.createConsumer(session.createQueue("FooBar"));
-        mc.receiveNoWait();
-        String result = resultString.get();
-        assertTrue("Output expected",result.contains("consumes destination: queue://FooBar"));
 	}
 	
 	@Override
