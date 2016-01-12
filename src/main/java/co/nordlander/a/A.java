@@ -57,6 +57,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.qpid.amqp_1_0.jms.impl.ConnectionFactoryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 /**
  * A - An ActiveMQ/JMS testing and admin tool
@@ -621,7 +622,7 @@ public class A {
 		final String topic = cmdMsg.getJMSDestination().toString();
 		final String advisoryMsg = advisoryDataStructureToString(cmdMsg.getDataStructure());
 		final String advisoryType = cmdMsg.getDataStructure() != null ? "Type: " + dataStructureTypeToString(cmdMsg.getDataStructure().getDataStructureType()) : "";
-		output("Advisory on " + topic + " Type: " + advisoryType + " Info: " + advisoryMsg);
+		output("Advisory on " + topic + advisoryType + (advisoryMsg != null ? " Info " + advisoryMsg : ""));
 		
 	}
 	
@@ -662,10 +663,10 @@ public class A {
 									+ brokerInfo.getBrokerName() + " brokerURL: " + brokerInfo.getBrokerURL();
 			
 			default:
-				return "";
+				return null;
 			}
 		} else {
-			return "";
+			return null;
 		}
 		
 	}
