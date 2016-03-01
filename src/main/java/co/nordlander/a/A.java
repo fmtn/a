@@ -103,6 +103,8 @@ public class A {
 	public static String CMD_JNDI = "J";
 	public static String CMD_JNDI_CF = "F";
 	public static String CMD_LIST_QUEUES = "l";
+	public static String CMD_SET_LONG_HEADER = "L";
+	public static String CMD_SET_INT_HEADER = "I";
 	public static String DEFAULT_COUNT_GET = "1";
 	public static String DEFAULT_COUNT_ALL = "0";
 	public static String DEFAULT_WAIT = "50";
@@ -192,6 +194,28 @@ public class A {
 				.create(CMD_SET_HEADER);
 
 		opts.addOption(property);
+
+		@SuppressWarnings("static-access")
+		Option longProperty = OptionBuilder
+				.withArgName("property=value")
+				.hasArgs(2)
+				.withValueSeparator()
+				.withDescription(
+						"use value for given property. Can be used several times.")
+				.create(CMD_SET_LONG_HEADER);
+
+		opts.addOption(longProperty);
+
+		@SuppressWarnings("static-access")
+		Option intProperty = OptionBuilder
+				.withArgName("property=value")
+				.hasArgs(2)
+				.withValueSeparator()
+				.withDescription(
+						"use value for given property. Can be used several times.")
+				.create(CMD_SET_INT_HEADER);
+				
+		opts.addOption(intProperty);
 
 		if (args.length == 0) {
 			HelpFormatter helpFormatter = new HelpFormatter();
@@ -425,6 +449,9 @@ public class A {
 			JMSException {
 		// Check if we have properties to put
 		Properties props = cmdLine.getOptionProperties(CMD_SET_HEADER);
+		Properties intProps = cmdLine.getOptionProperties(CMD_SET_INT_HEADER);
+		Properties longProps = cmdLine.getOptionProperties(CMD_SET_LONG_HEADER);
+
 		String type = cmdLine.getOptionValue(CMD_TYPE, DEFAULT_TYPE);
 		String encoding = cmdLine.getOptionValue(CMD_ENCODING, Charset
 				.defaultCharset().name());
@@ -456,6 +483,14 @@ public class A {
 		// enrich headers.
 		for (Entry<Object, Object> p : props.entrySet()) {
 			outMsg.setObjectProperty((String) p.getKey(), p.getValue());
+		}
+
+		for (Entry<Object, Object> p : intProps.entrySet()) {
+			outMsg.setIntProperty((String) p.getKey(), Integer.parseInt((String)p.getValue()));
+		}
+
+		for (Entry<Object, Object> p : longProps.entrySet()) {
+			outMsg.setLongProperty((String) p.getKey(), Long.parseLong((String)p.getValue()));
 		}
 
 		if (cmdLine.hasOption("r")) {
