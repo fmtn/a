@@ -804,7 +804,7 @@ public class A {
 		while (en.hasMoreElements()) {
 			String name = en.nextElement();
 			Object property = msg.getObjectProperty(name);
-			output("  ", name, ": ", property.toString());
+			output("  ", name, ": ", null != property ? property.toString() : "[null]");
 		}
 	}
 
