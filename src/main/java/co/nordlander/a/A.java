@@ -644,6 +644,15 @@ public class A {
 				output("Hex Payload:");
 				output(bytesToHex(bytes));
 			}
+		} else if (msg instanceof MapMessage) {
+			MapMessage mapMsg = (MapMessage) msg;
+			Enumeration<String> keys = mapMsg.getMapNames();
+			output("Payload:");
+			while (keys.hasMoreElements()) {
+				String name = keys.nextElement();
+				Object property = mapMsg.getObject(name);
+				output("  ", name, ": ", null != property ? property.toString() : "[null]");
+			}
 		} else if (msg instanceof ActiveMQMessage) { // Typically advisory messages of internal AMQ events.
 			ActiveMQMessage cmdMsg = (ActiveMQMessage) msg;
 			displayAdvisoryMessage(cmdMsg);
