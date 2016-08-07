@@ -17,6 +17,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import javax.jms.BytesMessage;
+import javax.jms.MapMessage;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
