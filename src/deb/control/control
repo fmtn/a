@@ -3,7 +3,6 @@ Version: [[version]]
 Section: misc
 Priority: optional
 Architecture: all
-Depends: jdk (>= 1.5)
 Maintainer: Petter Nordlander <nordlander.petter@gmail.com>
 Description: ActiveMQ CLI testing and message management
-Depends: default-jre | java6-runtime
+Depends: default-jre | java5-runtime | java6-runtime | java7-runtime | java8-runtime | java9-runtime

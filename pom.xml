@@ -231,7 +231,7 @@
                 </data>
                 <data>
                   <type>file</type>
-                  <src>${project.basedir}/debian/bin.sh</src>
+                  <src>${project.basedir}/src/deb/bin.sh</src>
                   <dst>${deb.lib.dir}/dist.sh</dst>
                   <mapper>
                     <type>perm</type>
