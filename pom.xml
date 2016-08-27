@@ -9,6 +9,7 @@
     <spring.version>3.2.8.RELEASE</spring.version>
     <deb.lib.dir>/usr/share/${project.artifactId}/lib</deb.lib.dir>
     <deb.bin>/usr/bin/${project.artifactId}</deb.bin>
+    <deb.skip>true</deb.skip>
   </properties>
 
   <dependencies>
@@ -206,6 +207,7 @@
               <goal>jdeb</goal>
             </goals>
             <configuration>
+              <skip>${deb.skip}</skip>
               <dataSet>
                 <data>
                   <src>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</src>
