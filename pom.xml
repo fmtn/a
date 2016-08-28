@@ -3,28 +3,31 @@
   <groupId>co.nordlander.a</groupId>
   <artifactId>a</artifactId>
   <version>1.3.1-SNAPSHOT</version>
-  
+
   <properties>
-  	<activemq.version>5.13.0</activemq.version>
+    <activemq.version>5.13.0</activemq.version>
     <spring.version>3.2.8.RELEASE</spring.version>
+    <deb.lib.dir>/usr/share/${project.artifactId}/lib</deb.lib.dir>
+    <deb.bin>/usr/bin/${project.artifactId}</deb.bin>
+    <deb.skip>true</deb.skip>
   </properties>
-  
+
   <dependencies>
-  	<dependency>
-  		<groupId>org.apache.activemq</groupId>
-  		<artifactId>activemq-client</artifactId>
-  		<version>${activemq.version}</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>commons-cli</groupId>
-  		<artifactId>commons-cli</artifactId>
-  		<version>1.2</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>commons-io</groupId>
-  		<artifactId>commons-io</artifactId>
-  		<version>2.4</version>
-  	</dependency>
+    <dependency>
+      <groupId>org.apache.activemq</groupId>
+      <artifactId>activemq-client</artifactId>
+      <version>${activemq.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-cli</groupId>
+      <artifactId>commons-cli</artifactId>
+      <version>1.2</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.4</version>
+    </dependency>
     <dependency>
       <groupId>org.apache.geronimo.specs</groupId>
       <artifactId>geronimo-jms_1.1_spec</artifactId>
@@ -45,82 +48,82 @@
       <artifactId>artemis-jms-client</artifactId>
       <version>1.2.0</version>
     </dependency>
-     <dependency>
-        <groupId>org.apache.activemq</groupId>
-        <artifactId>artemis-jms-server</artifactId>
-        <version>1.2.0</version>
-        <scope>test</scope>
-     </dependency>
-     <dependency>
-        <groupId>org.jboss.logmanager</groupId>
-        <artifactId>jboss-logmanager</artifactId>
-        <version>1.5.3.Final</version>
-        <scope>test</scope>
-     </dependency>
-  	
-  	<!-- Test dependencies -->
-  	<dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-core</artifactId>
-        <version>${spring.version}</version>
-        <scope>test</scope>
-    </dependency>
-    
     <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-expression</artifactId>
-        <version>${spring.version}</version>
-        <scope>test</scope>
+      <groupId>org.apache.activemq</groupId>
+      <artifactId>artemis-jms-server</artifactId>
+      <version>1.2.0</version>
+      <scope>test</scope>
     </dependency>
-    
     <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-beans</artifactId>
-        <version>${spring.version}</version>
-        <scope>test</scope>
+      <groupId>org.jboss.logmanager</groupId>
+      <artifactId>jboss-logmanager</artifactId>
+      <version>1.5.3.Final</version>
+      <scope>test</scope>
     </dependency>
-    
+
+    <!-- Test dependencies -->
     <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-aop</artifactId>
-        <version>${spring.version}</version>
-        <scope>test</scope>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-core</artifactId>
+      <version>${spring.version}</version>
+      <scope>test</scope>
     </dependency>
-    
+
     <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-context-support</artifactId>
-        <version>${spring.version}</version>
-        <scope>test</scope>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-expression</artifactId>
+      <version>${spring.version}</version>
+      <scope>test</scope>
     </dependency>
-    
+
     <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-context</artifactId>
-        <version>${spring.version}</version>
-        <scope>test</scope>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-beans</artifactId>
+      <version>${spring.version}</version>
+      <scope>test</scope>
     </dependency>
-    
+
     <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-jms</artifactId>
-        <version>${spring.version}</version>
-        <scope>test</scope>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-aop</artifactId>
+      <version>${spring.version}</version>
+      <scope>test</scope>
     </dependency>
-    
+
     <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-tx</artifactId>
-        <version>${spring.version}</version>
-        <scope>test</scope>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context-support</artifactId>
+      <version>${spring.version}</version>
+      <scope>test</scope>
     </dependency>
-    
-    
+
     <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-test</artifactId>
-        <version>${spring.version}</version>
-        <scope>test</scope>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+      <version>${spring.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-jms</artifactId>
+      <version>${spring.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-tx</artifactId>
+      <version>${spring.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-test</artifactId>
+      <version>${spring.version}</version>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
@@ -145,10 +148,10 @@
     </dependency>
 
     <dependency>
-        <groupId>org.apache.activemq</groupId>
-        <artifactId>activemq-amqp</artifactId>
-        <version>${activemq.version}</version>
-        <scope>test</scope>
+      <groupId>org.apache.activemq</groupId>
+      <artifactId>activemq-amqp</artifactId>
+      <version>${activemq.version}</version>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
@@ -157,41 +160,90 @@
       <version>4.11</version>
       <scope>test</scope>
     </dependency>
-    
+
     <dependency>
-		<groupId>org.apache.xbean</groupId>
-		<artifactId>xbean-spring</artifactId>
-		<version>3.18</version>
-		<scope>test</scope>
-	</dependency>
-    
-    
+      <groupId>org.apache.xbean</groupId>
+      <artifactId>xbean-spring</artifactId>
+      <version>3.18</version>
+      <scope>test</scope>
+    </dependency>
+
+
   </dependencies>
   <build>
     <defaultGoal>install</defaultGoal>
-	  <plugins>
-		  <plugin>
-			  <artifactId>maven-assembly-plugin</artifactId>
-			  <configuration>
-			    <archive>
-			      <manifest>
-			        <mainClass>co.nordlander.a.A</mainClass>
-			      </manifest>
-			    </archive>
-			    <descriptorRefs>
-			      <descriptorRef>jar-with-dependencies</descriptorRef>
-			    </descriptorRefs>
-			  </configuration>
-			  <executions>
-			    <execution>
-			      <id>make-assembly</id> <!-- this is used for inheritance merges -->
-			      <phase>package</phase> <!-- bind to the packaging phase -->
-			      <goals>
-			        <goal>single</goal>
-			      </goals>
-			    </execution>
-			  </executions>
-			</plugin>
-		</plugins>
-	</build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>co.nordlander.a.A</mainClass>
+            </manifest>
+          </archive>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id> <!-- this is used for inheritance merges -->
+            <phase>package</phase> <!-- bind to the packaging phase -->
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <artifactId>jdeb</artifactId>
+        <groupId>org.vafer</groupId>
+        <version>1.5</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>jdeb</goal>
+            </goals>
+            <configuration>
+              <skip>${deb.skip}</skip>
+              <dataSet>
+                <data>
+                  <src>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</src>
+                  <type>file</type>
+                  <mapper>
+                    <type>perm</type>
+                    <prefix>${deb.lib.dir}</prefix>
+                  </mapper>
+                </data>
+                <data>
+                  <type>link</type>
+                  <linkName>${deb.lib.dir}/dist.jar</linkName>
+                  <linkTarget>./${project.build.finalName}-jar-with-dependencies.jar</linkTarget>
+                  <symlink>true</symlink>
+                </data>
+                <data>
+                  <type>link</type>
+                  <linkName>${deb.bin}</linkName>
+                  <linkTarget>${deb.lib.dir}/dist.sh</linkTarget>
+                  <symlink>true</symlink>
+                </data>
+                <data>
+                  <type>file</type>
+                  <src>${project.basedir}/src/deb/bin.sh</src>
+                  <dst>${deb.lib.dir}/dist.sh</dst>
+                  <mapper>
+                    <type>perm</type>
+                    <filemode>0775</filemode>
+                  </mapper>
+                </data>
+              </dataSet>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+    </plugins>
+  </build>
 </project>
