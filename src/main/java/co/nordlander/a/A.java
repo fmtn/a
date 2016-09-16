@@ -106,6 +106,7 @@ public class A {
 	public static String CMD_LIST_QUEUES = "l";
 	public static String CMD_SET_LONG_HEADER = "L";
 	public static String CMD_SET_INT_HEADER = "I";
+	public static String CMD_CORRELATION_ID = "D";
 	public static String DEFAULT_COUNT_GET = "1";
 	public static String DEFAULT_COUNT_ALL = "0";
 	public static String DEFAULT_WAIT = "50";
@@ -138,6 +139,8 @@ public class A {
 				"Set message to non persistent.");
 		opts.addOption(CMD_REPLY_TO, "reply-to", true,
 				"Set reply to destination, i.e. queue:reply");
+		opts.addOption(CMD_CORRELATION_ID, "correlation-id", true,
+				"Set CorrelationID");
 		opts.addOption(
 				CMD_OUTPUT,
 				"output",
@@ -496,6 +499,10 @@ public class A {
 
 		if (cmdLine.hasOption("r")) {
 			outMsg.setJMSReplyTo(createDestination(cmdLine.getOptionValue("r")));
+		}
+
+		if (cmdLine.hasOption(CMD_CORRELATION_ID)) {
+			outMsg.setJMSCorrelationID(cmdLine.getOptionValue(CMD_CORRELATION_ID));
 		}
 
 		if (cmdLine.hasOption(CMD_PRIORITY)) {
