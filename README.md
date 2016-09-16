@@ -56,6 +56,7 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
  -p,--put <arg>            Put a message. Specify data. if starts with @,
                            a file is assumed and loaded
  -r,--reply-to <arg>       Set reply to destination, i.e. queue:reply
+ -D,--correlation-id <arg> Set CorrelationID
  -s,--selector <arg>       Browse or get with selector
  -t,--type <arg>           Message type to put, [bytes, text] - defaults
                            to text
