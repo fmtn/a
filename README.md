@@ -13,56 +13,60 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
        [-C <arg>] [-c <arg>] [-D <arg>] [-e <arg>] [-F <arg>] [-f <arg>]
        [-g] [-H <property=value>] [-I <property=value>] [-i <arg>] [-J
        <arg>] [-j] [-L <property=value>] [-l] [-M <arg>] [-n] [-O] [-o
-       <arg>] [-P <arg>] [-p <arg>] [-r <arg>] [-s <arg>] [-t <arg>] [-U
-       <arg>] [-w <arg>]
- -A,--amqp                   Set protocol to AMQP. Defaults to OpenWire
- -a,--artemis-core           Set protocol to ActiveMQ Artemis Core.
-                             Defaults to OpenWire
- -b,--broker <arg>           URL to broker. defaults to:
-                             tcp://localhost:61616
- -C,--copy-queue <arg>       Copy all messages from this to target.
-                             Limited by maxBrowsePageSize in broker
-                             settings (default 400).
- -c,--count <arg>            A number of messages to browse,get,move or
-                             put (put will put the same message <count>
-                             times). 0 means all messages.
- -D,--correlation-id <arg>   Set CorrelationID
- -e,--encoding <arg>         Encoding of input file data. Default UTF-8
- -F,--jndi-cf-name <arg>     Specify JNDI name for ConnectionFactory.
-                             Defaults to connectionFactory. Use with -J
- -f,--find <arg>             Search for messages in queue with this value
-                             in payload. Use with browse.
- -g,--get                    Get a message from destination
- -H <property=value>         use value for given property. Can be used
-                             several times.
- -I <property=value>         use value for given property. Can be used
-                             several times.
- -i,--priority <arg>         sets JMSPriority
- -J,--jndi <arg>             Connect via JNDI. Overrides -b and -A
-                             options. Specify context file on classpath
- -j,--jms-headers            Print JMS headers
- -L <property=value>         use value for given property. Can be used
-                             several times.
- -l,--list-queues            List queues and topics on broker (OpenWire
-                             only)
- -M,--move-queue <arg>       Move all messages from this to target
- -n,--non-persistent         Set message to non persistent.
- -O,--openwire               Set protocol to OpenWire. This is default
-                             protocol
- -o,--output <arg>           file to write payload to. If multiple
-                             messages, a -1.<ext> will be added to the
-                             file. BytesMessage will be written as-is,
-                             TextMessage will be written in UTF-8
- -P,--pass <arg>             Password to connect to broker
- -p,--put <arg>              Put a message. Specify data. if starts with
-                             @, a file is assumed and loaded
- -r,--reply-to <arg>         Set reply to destination, i.e. queue:reply
- -s,--selector <arg>         Browse or get with selector
- -t,--type <arg>             Message type to put, [bytes, text] - defaults
-                             to text
- -U,--user <arg>             Username to connect to broker
- -w,--wait <arg>             Time to wait on get operation. Default 50. 0
-                             equals infinity
+       <arg>] [-P <arg>] [-p <arg>] [-r <arg>] [-s <arg>] [-T] [-t <arg>]
+       [-U <arg>] [-w <arg>]
+ -A,--amqp                     Set protocol to AMQP. Defaults to OpenWire
+ -a,--artemis-core             Set protocol to ActiveMQ Artemis Core.
+                               Defaults to OpenWire
+ -b,--broker <arg>             URL to broker. defaults to:
+                               tcp://localhost:61616
+ -C,--copy-queue <arg>         Copy all messages from this to target.
+                               Limited by maxBrowsePageSize in broker
+                               settings (default 400).
+ -c,--count <arg>              A number of messages to browse,get,move or
+                                                put (put will put the same message <count>
+                               times). 0 means all messages.
+ -D,--correlation-id <arg>     Set CorrelationID
+ -e,--encoding <arg>           Encoding of input file data. Default UTF-8
+ -F,--jndi-cf-name <arg>       Specify JNDI name for ConnectionFactory.
+                               Defaults to connectionFactory. Use with -J
+ -f,--find <arg>               Search for messages in queue with this
+                               value in payload. Use with browse.
+ -g,--get                      Get a message from destination
+ -H <property=value>           use value for given property. Can be used
+                               several times.
+ -I <property=value>           use value for given property. Can be used
+                               several times.
+ -i,--priority <arg>           sets JMSPriority
+ -J,--jndi <arg>               Connect via JNDI. Overrides -b and -A
+                               options. Specify context file on classpath
+ -j,--jms-headers              Print JMS headers
+ -L <property=value>           use value for given property. Can be used
+                               several times.
+ -l,--list-queues              List queues and topics on broker (OpenWire
+                               only)
+ -M,--move-queue <arg>         Move all messages from this to target
+ -n,--non-persistent           Set message to non persistent.
+ -O,--openwire                 Set protocol to OpenWire. This is default
+                               protocol
+ -o,--output <arg>             file to write payload to. If multiple
+                               messages, a -1.<ext> will be added to the
+                               file. BytesMessage will be written as-is,
+                               TextMessage will be written in UTF-8
+ -P,--pass <arg>               Password to connect to broker
+ -p,--put <arg>                Put a message. Specify data. if starts with
+                               @, a file is assumed and loaded
+ -r,--reply-to <arg>           Set reply to destination, i.e. queue:reply
+ -s,--selector <arg>           Browse or get with selector
+ -T,--no-transaction-support   Set to disable transactions if not
+                               supported by platform. I.e. Azure Service
+                               Bus. When set to false, the Move option is
+                               NOT atomic.
+ -t,--type <arg>               Message type to put, [bytes, text] -
+                               defaults to text
+ -U,--user <arg>               Username to connect to broker
+ -w,--wait <arg>               Time to wait on get operation. Default 50.
+                               0 equals infinity
 ```
 
 Example1. Put message with payload "foobar" to queue q on local broker:
@@ -99,6 +103,22 @@ A defaults to ActiveMQ default protocol, OpenWire. You can also use AMQP 1.0.
 In theory, it should work with all AMQP 1.0 compliant brokers. It does not work with older versions of AMQP.
 
     $a -A -b "amqp://guest:guest@localhost:5672" -p "foobar" q
+    
+    
+#Azure Service Bus
+Service Bus supports AMQP 1.0 so it's possible to use A to connect.
+However, it does not support transactions, so the -T option has to be set to deal with that.
+
+To connect, you will need a "username" and "password". The username will be the "shared access policy name".
+The password is the URL-encoded key for that policy. These are found in the Azure portal.
+
+Example command to send a message to Azure Service Bus:
+
+	$a -A -T -b "amqps://mypolicyname:iAkywS...@mynamespace.servicebus.windows.net" -p "Test msg" queuename
+
+
+A word of warning! There are some features not working with AMQP 1.0 in Service Bus. Some of which are mandatory to support the JMS API fully.
+This means some of the features of A will not work - or behave strangely.
 
 #Use Artemis Core
 Use Artemis core protocol (HornetQ) with the -a option.

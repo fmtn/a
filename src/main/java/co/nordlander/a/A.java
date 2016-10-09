@@ -79,34 +79,36 @@ public class A {
 		}
 	};
 
-	public static String CMD_OPENWIRE = "O";
 	public static String CMD_AMQP = "A";
 	public static String CMD_ARTEMIS_CORE = "a";
 	public static String CMD_BROKER = "b";
-	public static String CMD_GET = "g";
-	public static String CMD_PUT = "p";
-	public static String CMD_TYPE = "t";
-	public static String CMD_ENCODING = "e";
-	public static String CMD_NON_PERSISTENT = "n";
-	public static String CMD_REPLY_TO = "r";
-	public static String CMD_OUTPUT = "o";
-	public static String CMD_COUNT = "c";
-	public static String CMD_JMS_HEADERS = "j";
 	public static String CMD_COPY_QUEUE = "C";
-	public static String CMD_MOVE_QUEUE = "M";
+	public static String CMD_COUNT = "c";
+	public static String CMD_CORRELATION_ID = "D";
+	public static String CMD_ENCODING = "e";
+	public static String CMD_JNDI_CF = "F";
 	public static String CMD_FIND = "f";
-	public static String CMD_SELECTOR = "s";
-	public static String CMD_WAIT = "w";
-	public static String CMD_USER = "U";
-	public static String CMD_PASS = "P";
+	public static String CMD_GET = "g";
 	public static String CMD_SET_HEADER = "H";
+	public static String CMD_SET_INT_HEADER = "I";
 	public static String CMD_PRIORITY = "i";
 	public static String CMD_JNDI = "J";
-	public static String CMD_JNDI_CF = "F";
+	public static String CMD_JMS_HEADERS = "j";
 	public static String CMD_LIST_QUEUES = "l";
 	public static String CMD_SET_LONG_HEADER = "L";
-	public static String CMD_SET_INT_HEADER = "I";
-	public static String CMD_CORRELATION_ID = "D";
+	public static String CMD_MOVE_QUEUE = "M";
+	public static String CMD_NON_PERSISTENT = "n";
+	public static String CMD_OPENWIRE = "O";
+	public static String CMD_OUTPUT = "o";
+	public static String CMD_PASS = "P";
+	public static String CMD_PUT = "p";
+	public static String CMD_REPLY_TO = "r";
+	public static String CMD_SELECTOR = "s";
+	public static String CMD_NO_TRANSACTION_SUPPORT = "T";
+	public static String CMD_TYPE = "t";
+	public static String CMD_USER = "U";
+	public static String CMD_WAIT = "w";
+	
 	public static String DEFAULT_COUNT_GET = "1";
 	public static String DEFAULT_COUNT_ALL = "0";
 	public static String DEFAULT_WAIT = "50";
@@ -187,6 +189,10 @@ public class A {
 				"Set protocol to OpenWire. This is default protocol");
 		opts.addOption(CMD_LIST_QUEUES, "list-queues", false,
 				"List queues and topics on broker (OpenWire only)");
+		
+		opts.addOption(CMD_NO_TRANSACTION_SUPPORT,"no-transaction-support", false, 
+				"Set to disable transactions if not supported by platform. "
+				+ "I.e. Azure Service Bus. When set to false, the Move option is NOT atomic.");	
 
 		@SuppressWarnings("static-access")
 		Option property = OptionBuilder
@@ -220,6 +226,7 @@ public class A {
 				.create(CMD_SET_INT_HEADER);
 				
 		opts.addOption(intProperty);
+		
 
 		if (args.length == 0) {
 			HelpFormatter helpFormatter = new HelpFormatter();
@@ -242,7 +249,8 @@ public class A {
 			connect(cmdLine.getOptionValue(CMD_BROKER, "tcp://localhost:61616"),
 					cmdLine.getOptionValue(CMD_USER),
 					cmdLine.getOptionValue(CMD_PASS), protocol,
-					cmdLine.getOptionValue(CMD_JNDI, ""));
+					cmdLine.getOptionValue(CMD_JNDI, ""),
+					cmdLine.hasOption(CMD_NO_TRANSACTION_SUPPORT));
 
 			long startTime = System.currentTimeMillis();
 
@@ -292,14 +300,20 @@ public class A {
 
 	protected void executeMove(CommandLine cmdLine) throws JMSException,
 			UnsupportedEncodingException, IOException {
-		Queue tq = tsess.createQueue(cmdLine.getArgs()[0]);
-		Queue q = tsess.createQueue(cmdLine.getOptionValue(CMD_MOVE_QUEUE)); // Source
+		
+		// Should be able to support some kind of Move operation even though the session is not transacted.
+		boolean hasTransactionalSession = tsess != null;
+		Session moveSession = hasTransactionalSession ? tsess : sess;
+		
+		Queue tq = moveSession.createQueue(cmdLine.getArgs()[0]);
+		Queue q = moveSession.createQueue(cmdLine.getOptionValue(CMD_MOVE_QUEUE)); // Source
+
 		MessageConsumer mq = null;
-		MessageProducer mp = tsess.createProducer(tq);
+		MessageProducer mp = moveSession.createProducer(tq);
 		if (cmdLine.hasOption(CMD_SELECTOR)) { // Selectors
-			mq = tsess.createConsumer(q, cmdLine.getOptionValue(CMD_SELECTOR));
+			mq = moveSession.createConsumer(q, cmdLine.getOptionValue(CMD_SELECTOR));
 		} else {
-			mq = tsess.createConsumer(q);
+			mq = moveSession.createConsumer(q);
 		}
 		int count = Integer.parseInt(cmdLine.getOptionValue(CMD_COUNT,
 				DEFAULT_COUNT_ALL));
@@ -310,7 +324,9 @@ public class A {
 				break;
 			} else {
 				mp.send(msg);
-				tsess.commit();
+				if( hasTransactionalSession ){
+					moveSession.commit();
+				}
 				++j;
 			}
 		}
@@ -360,7 +376,7 @@ public class A {
 	}
 
 	protected void connect(String url, String user, String password,
-			Protocol protocol, String jndi) throws Exception {
+			Protocol protocol, String jndi, boolean noTransactionSupport) throws Exception {
 		if (jndi == null || jndi.equals("")) {
 			switch (protocol) {
 			case AMQP:
@@ -410,7 +426,11 @@ public class A {
 			conn = cf.createConnection();
 		}
 		sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-		tsess = conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
+		if (noTransactionSupport == false) { // Some providers cannot create transactional sessions. I.e. Azure Servie Bus
+			tsess = conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
+		} else {
+			tsess = null;
+		}
 		conn.start();
 	}
 
@@ -654,6 +674,7 @@ public class A {
 			}
 		} else if (msg instanceof MapMessage) {
 			MapMessage mapMsg = (MapMessage) msg;
+			@SuppressWarnings("unchecked")
 			Enumeration<String> keys = mapMsg.getMapNames();
 			output("Payload:");
 			while (keys.hasMoreElements()) {
