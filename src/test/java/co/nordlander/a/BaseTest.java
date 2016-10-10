@@ -1,12 +1,17 @@
 package co.nordlander.a;
 
-import org.apache.activemq.broker.BrokerService;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import static co.nordlander.a.A.CMD_COPY_QUEUE;
+import static co.nordlander.a.A.CMD_COUNT;
+import static co.nordlander.a.A.CMD_GET;
+import static co.nordlander.a.A.CMD_MOVE_QUEUE;
+import static co.nordlander.a.A.CMD_PRIORITY;
+import static co.nordlander.a.A.CMD_PUT;
+import static co.nordlander.a.A.CMD_READ_FOLDER;
+import static co.nordlander.a.A.CMD_WAIT;
+import static org.junit.Assert.*;
 
-import javax.jms.*;
+import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -16,10 +21,24 @@ import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static co.nordlander.a.A.*;
-import static co.nordlander.a.A.CMD_GET;
-import static co.nordlander.a.A.CMD_WAIT;
-import static org.junit.Assert.*;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+
+import org.apache.activemq.broker.BrokerService;
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * A base class with all the test cases.
@@ -49,6 +68,8 @@ public abstract class BaseTest {
     protected abstract ConnectionFactory getConnectionFactory();
     protected abstract String getConnectCommand();
     protected abstract void clearBroker() throws Exception;
+    
+    @Rule public TemporaryFolder tempFolder = new TemporaryFolder();
 
 
     @Before
@@ -217,8 +238,8 @@ public abstract class BaseTest {
         MessageConsumer mc = session.createConsumer(sourceQueue);
         TextMessage msg = null;
 
-	// Verify 1 messages are left on source queue
-	msg = (TextMessage)mc.receive(TEST_TIMEOUT);
+        // Verify 1 messages are left on source queue
+        msg = (TextMessage)mc.receive(TEST_TIMEOUT);
         assertNotNull(msg);
 
         // Verify NO messages are left on source queue
@@ -307,6 +328,33 @@ public abstract class BaseTest {
         msgs = getAllMessages(session.createConsumer(targetQueue));
         assertEquals(1,msgs.size());
         assertEquals("theOne",msgs.get(0).getText());
+    }
+    
+    @Test
+    public void testReadFolder() throws Exception {
+    	File folder = tempFolder.newFolder();
+    	final String file1 = "file1-content";
+    	final String file2 = "file2-content";
+    	final String file3 = "no-go";
+    	FileUtils.writeStringToFile(new File(folder, "file1.txt"), file1, StandardCharsets.UTF_8);
+    	FileUtils.writeStringToFile(new File(folder, "file2.txt"), file2, StandardCharsets.UTF_8);
+    	FileUtils.writeStringToFile(new File(folder, "file3.dat"), file3, StandardCharsets.UTF_8);
+    	Thread.sleep(2000L); // Saturate file age
+    	final String fileFilter = folder.getAbsolutePath() + "/*.txt";
+    	final String cmdLine = getConnectCommand() + "-" + CMD_READ_FOLDER + " " + fileFilter + " TEST.QUEUE";
+    	a.run(cmdLine.split(" "));
+    	
+    	MessageConsumer mc = session.createConsumer(testQueue);
+    	TextMessage msg1 = (TextMessage)mc.receive(TEST_TIMEOUT);
+    	assertNotNull(msg1);
+    	assertFalse(file3.equals(msg1.getText()));
+    	TextMessage msg2 = (TextMessage)mc.receive(TEST_TIMEOUT);
+    	assertNotNull(msg2);
+    	assertFalse(file3.equals(msg2.getText()));
+    	assertNull(mc.receive(TEST_TIMEOUT));
+    	File[] remainingFiles = folder.listFiles();
+    	assertEquals(1,remainingFiles.length); // one file left - the .dat one
+    	assertEquals("file3.dat",remainingFiles[0].getName());
     }
 
     /**

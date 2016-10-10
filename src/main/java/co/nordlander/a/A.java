@@ -8,8 +8,10 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.nio.charset.Charset;
+import java.nio.file.Paths;
 import java.text.Format;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Map.Entry;
@@ -17,12 +19,12 @@ import java.util.Properties;
 import java.util.Set;
 
 import javax.jms.BytesMessage;
-import javax.jms.MapMessage;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.MapMessage;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -55,12 +57,15 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.AgeFileFilter;
+import org.apache.commons.io.filefilter.AndFileFilter;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.qpid.amqp_1_0.jms.impl.ConnectionFactoryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A - An ActiveMQ/JMS testing and admin tool
+ * A - A JMS testing and admin tool. Primarily built for use with ActiveMQ.
  */
 public class A {
 	private static final Logger logger = LoggerFactory.getLogger(A.class);
@@ -78,43 +83,47 @@ public class A {
 			System.out.println("");
 		}
 	};
-
-	public static String CMD_AMQP = "A";
-	public static String CMD_ARTEMIS_CORE = "a";
-	public static String CMD_BROKER = "b";
-	public static String CMD_COPY_QUEUE = "C";
-	public static String CMD_COUNT = "c";
-	public static String CMD_CORRELATION_ID = "D";
-	public static String CMD_ENCODING = "e";
-	public static String CMD_JNDI_CF = "F";
-	public static String CMD_FIND = "f";
-	public static String CMD_GET = "g";
-	public static String CMD_SET_HEADER = "H";
-	public static String CMD_SET_INT_HEADER = "I";
-	public static String CMD_PRIORITY = "i";
-	public static String CMD_JNDI = "J";
-	public static String CMD_JMS_HEADERS = "j";
-	public static String CMD_LIST_QUEUES = "l";
-	public static String CMD_SET_LONG_HEADER = "L";
-	public static String CMD_MOVE_QUEUE = "M";
-	public static String CMD_NON_PERSISTENT = "n";
-	public static String CMD_OPENWIRE = "O";
-	public static String CMD_OUTPUT = "o";
-	public static String CMD_PASS = "P";
-	public static String CMD_PUT = "p";
-	public static String CMD_REPLY_TO = "r";
-	public static String CMD_SELECTOR = "s";
-	public static String CMD_NO_TRANSACTION_SUPPORT = "T";
-	public static String CMD_TYPE = "t";
-	public static String CMD_USER = "U";
-	public static String CMD_WAIT = "w";
 	
-	public static String DEFAULT_COUNT_GET = "1";
-	public static String DEFAULT_COUNT_ALL = "0";
-	public static String DEFAULT_WAIT = "50";
-	public static String TYPE_TEXT = "text";
-	public static String DEFAULT_TYPE = TYPE_TEXT;
-	public static String DEFAULT_DATE_FORMAT = "yyyy MM dd HH:mm:ss";
+	// Commands
+	public static final String CMD_AMQP = "A";
+	public static final String CMD_ARTEMIS_CORE = "a";
+	public static final String CMD_BROKER = "b";
+	public static final String CMD_COPY_QUEUE = "C";
+	public static final String CMD_COUNT = "c";
+	public static final String CMD_CORRELATION_ID = "D";
+	public static final String CMD_ENCODING = "e";
+	public static final String CMD_JNDI_CF = "F";
+	public static final String CMD_FIND = "f";
+	public static final String CMD_GET = "g";
+	public static final String CMD_SET_HEADER = "H";
+	public static final String CMD_SET_INT_HEADER = "I";
+	public static final String CMD_PRIORITY = "i";
+	public static final String CMD_JNDI = "J";
+	public static final String CMD_JMS_HEADERS = "j";
+	public static final String CMD_LIST_QUEUES = "l";
+	public static final String CMD_SET_LONG_HEADER = "L";
+	public static final String CMD_MOVE_QUEUE = "M";
+	public static final String CMD_NON_PERSISTENT = "n";
+	public static final String CMD_OPENWIRE = "O";
+	public static final String CMD_OUTPUT = "o";
+	public static final String CMD_PASS = "P";
+	public static final String CMD_PUT = "p";
+	public static final String CMD_REPLY_TO = "r";
+	public static final String CMD_READ_FOLDER = "R";
+	public static final String CMD_SELECTOR = "s";
+	public static final String CMD_NO_TRANSACTION_SUPPORT = "T";
+	public static final String CMD_TYPE = "t";
+	public static final String CMD_USER = "U";
+	public static final String CMD_WAIT = "w";
+	
+	// Various constants
+	public static final long SLEEP_TIME_BETWEEN_FILE_CHECK = 1000L;
+	public static final String DEFAULT_COUNT_GET = "1";
+	public static final String DEFAULT_COUNT_ALL = "0";
+	public static final String DEFAULT_WAIT = "50";
+	public static final String TYPE_TEXT = "text";
+	public static final String DEFAULT_TYPE = TYPE_TEXT;
+	public static final String DEFAULT_DATE_FORMAT = "yyyy MM dd HH:mm:ss";
 
 	public enum Protocol {
 		OpenWire, AMQP, ArtemisCore
@@ -193,6 +202,10 @@ public class A {
 		opts.addOption(CMD_NO_TRANSACTION_SUPPORT,"no-transaction-support", false, 
 				"Set to disable transactions if not supported by platform. "
 				+ "I.e. Azure Service Bus. When set to false, the Move option is NOT atomic.");	
+		
+		opts.addOption(CMD_READ_FOLDER, "read-folder", true, 
+				"Read files in folder and put to queue. Sent files are deleted! Specify path and a filename."
+						+" Wildcards are supported '*' and '?'. If no path is given, current directory is assumed.");
 
 		@SuppressWarnings("static-access")
 		Option property = OptionBuilder
@@ -264,6 +277,8 @@ public class A {
 				executeMove(cmdLine);
 			} else if (cmdLine.hasOption(CMD_LIST_QUEUES)) {
 				executeListQueues(cmdLine);
+			} else if (cmdLine.hasOption(CMD_READ_FOLDER)) {
+				executeReadFolder(cmdLine);
 			} else {
 				executeBrowse(cmdLine);
 			}
@@ -469,7 +484,67 @@ public class A {
 		}
 	}
 
-	protected void executePut(final CommandLine cmdLine) throws IOException,
+	protected void executePut(final CommandLine cmdLine) throws IOException, JMSException{
+		String data = cmdLine.getOptionValue(CMD_PUT);
+		putData(data, cmdLine);
+		if( data.startsWith("@")){
+			output("File: " + data.substring(1) + " sent");
+		} else {
+			output("Message sent");
+		}
+	}
+	
+	protected void executeReadFolder(final CommandLine cmdLine) throws IOException,
+	JMSException {
+		
+		final long fileAgeMS = 1000;
+		String pathFilter = cmdLine.getOptionValue(CMD_READ_FOLDER);
+		if( pathFilter.isEmpty() ){
+			output("Option " + CMD_READ_FOLDER + " requires a path and wildcard filename.");
+		}
+		
+		// expression will be like: /path/to/file/*.txt
+		// Last index of / will divide filter from path
+		File directory = Paths.get(".").toFile();
+		String filter = pathFilter;
+		int indexOfPathFilterSeparator = pathFilter.lastIndexOf('/');
+		if( indexOfPathFilterSeparator > 0){ // path + filename/filter
+			String path = pathFilter.substring(0, indexOfPathFilterSeparator);
+			directory = new File(path);
+			if ( pathFilter.endsWith("/")) {
+				output("Option " + CMD_READ_FOLDER + " cannot end with /. Please pass a wildcard filename after path.");
+				return;
+			} else {
+				filter = pathFilter.substring(indexOfPathFilterSeparator + 1);
+			}
+		}
+		AndFileFilter fileFilters = new AndFileFilter();
+		fileFilters.addFileFilter(new WildcardFileFilter(filter));
+		fileFilters.addFileFilter(new AgeFileFilter(System.currentTimeMillis() - fileAgeMS));
+		
+		long startTime = System.currentTimeMillis();
+		long waitTime = Long.parseLong(cmdLine.getOptionValue(CMD_WAIT,"0"));
+		long endTime = startTime + waitTime;	
+		do {
+			Collection<File> files = FileUtils.listFiles(directory, fileFilters, null); // no recursion
+			for(File file : files) {
+				putData("@"+file.getAbsolutePath(),cmdLine);
+				if (!file.delete()) {
+					output("Failed to delete file " + file.getName());
+				}
+				output("File " + file.getName() + " sent");
+			}
+			
+			try {
+				Thread.sleep(SLEEP_TIME_BETWEEN_FILE_CHECK);
+			} catch (InterruptedException e) {
+				output("Interrupted");
+				break;
+			}
+		} while( endTime > System.currentTimeMillis());
+	}
+	
+	protected void putData(final String data, final CommandLine cmdLine) throws IOException,
 			JMSException {
 		// Check if we have properties to put
 		Properties props = cmdLine.getOptionProperties(CMD_SET_HEADER);
@@ -482,8 +557,8 @@ public class A {
 
 		Message outMsg = null;
 		// figure out input data
-		String data = cmdLine.getOptionValue(CMD_PUT);
 		if (data.startsWith("@")) {
+			
 			// Load file.
 			byte[] bytes = FileUtils.readFileToByteArray(new File(data
 					.substring(1)));
@@ -545,7 +620,6 @@ public class A {
 			output("", count, " messages sent");
 		} else {
 			mp.send(outMsg);
-			output("Message sent");
 		}
 	}
 
