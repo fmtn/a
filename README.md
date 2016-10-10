@@ -13,8 +13,8 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
        [-C <arg>] [-c <arg>] [-D <arg>] [-e <arg>] [-F <arg>] [-f <arg>]
        [-g] [-H <property=value>] [-I <property=value>] [-i <arg>] [-J
        <arg>] [-j] [-L <property=value>] [-l] [-M <arg>] [-n] [-O] [-o
-       <arg>] [-P <arg>] [-p <arg>] [-r <arg>] [-s <arg>] [-T] [-t <arg>]
-       [-U <arg>] [-w <arg>]
+       <arg>] [-P <arg>] [-p <arg>] [-R <arg>] [-r <arg>] [-s <arg>] [-T]
+       [-t <arg>] [-U <arg>] [-w <arg>]
  -A,--amqp                     Set protocol to AMQP. Defaults to OpenWire
  -a,--artemis-core             Set protocol to ActiveMQ Artemis Core.
                                Defaults to OpenWire
@@ -24,7 +24,7 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
                                Limited by maxBrowsePageSize in broker
                                settings (default 400).
  -c,--count <arg>              A number of messages to browse,get,move or
-                                                put (put will put the same message <count>
+                               put (put will put the same message <count>
                                times). 0 means all messages.
  -D,--correlation-id <arg>     Set CorrelationID
  -e,--encoding <arg>           Encoding of input file data. Default UTF-8
@@ -56,6 +56,11 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
  -P,--pass <arg>               Password to connect to broker
  -p,--put <arg>                Put a message. Specify data. if starts with
                                @, a file is assumed and loaded
+ -R,--read-folder <arg>        Read files in folder and put to queue. Sent
+                               files are deleted! Specify path and a
+                               filename. Wildcards are supported '*' and
+                               '?'. If no path is given, current directory
+                               is assumed.
  -r,--reply-to <arg>           Set reply to destination, i.e. queue:reply
  -s,--selector <arg>           Browse or get with selector
  -T,--no-transaction-support   Set to disable transactions if not
@@ -69,34 +74,37 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
                                0 equals infinity
 ```
 
-Example1. Put message with payload "foobar" to queue q on local broker:
+Example 1. Put message with payload "foobar" to queue q on local broker:
     
     $a -p "foobar" q
 
-Example2. Put message with payload of file foo.bar to queue q on local broker, also set a property
+Example 2. Put message with payload of file foo.bar to queue q on local broker, also set a property
     
     $a -p "@foo.bar" -Hfoo=bar q
 
-Example3. Browse five messages from queue q.
+Example 3. Browse five messages from queue q.
  
     $a -c 5 q
 
-Example4. Put 100 messages to queue q (for load test etc)
+Example 4. Put 100 messages to queue q (for load test etc)
 
     $a -p "foobar" -c 100 q
 
-Example5. Get message from queue and show JMS headers
+Example 5. Get message from queue and show JMS headers
     
     $a -g -j q
 
-Example6. Put file foo.bar as a byte message on queue q
+Example 6. Put file foo.bar as a byte message on queue q
     
     $a -p "@foo.bar" -t bytes q
 
-Example7. Put file foo.bar as text message on queue q, with encoding EBCDIC CP037 (any charset known on server/JVM should work)
+Example 7. Put file foo.bar as text message on queue q, with encoding EBCDIC CP037 (any charset known on server/JVM should work)
     
     $a -p "@foo.bar" -e CP037 q
+    
+Example 8. Read all XML files in a folder input an put them on queue q. Files are deleted afterwards.
 
+    $a -R "input/*.xml" q
 
 #Use AMQP 1.0
 A defaults to ActiveMQ default protocol, OpenWire. You can also use AMQP 1.0.
@@ -114,7 +122,7 @@ The password is the URL-encoded key for that policy. These are found in the Azur
 
 Example command to send a message to Azure Service Bus:
 
-	$a -A -T -b "amqps://mypolicyname:iAkywS...@mynamespace.servicebus.windows.net" -p "Test msg" queuename
+	$a -A -T -b "amqps://mypolicyname:iAkywS...@mynamespace.servicebus.windows.net" -p "Test msg" q
 
 
 A word of warning! There are some features not working with AMQP 1.0 in Service Bus. Some of which are mandatory to support the JMS API fully.
