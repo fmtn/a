@@ -218,6 +218,33 @@ public abstract class BaseTest {
         msg = (TextMessage)mc.receive(TEST_TIMEOUT);
         assertNull(msg);
     }
+    
+    /**
+     * Test that all messages are moved from one queue to the other.
+     * Input count = 0
+     * @throws Exception
+     */
+    @Test
+    public void testMoveZeroCountQueue() throws Exception{
+        final String cmdLine = getConnectCommand() + "-" + CMD_MOVE_QUEUE + " SOURCE.QUEUE -" + CMD_COUNT + " 0 TARGET.QUEUE";
+        MessageProducer mp = session.createProducer(sourceQueue);
+        mp.send(testMessage);
+        mp.send(testMessage);
+        a.run(cmdLine.split(" "));
+        MessageConsumer mc = session.createConsumer(sourceQueue);
+        TextMessage msg = null;
+        // Verify NO messages are left on source queue
+        msg = (TextMessage)mc.receive(TEST_TIMEOUT);
+        assertNull(msg);
+        // Verify messages are moved to target queue
+        mc = session.createConsumer(targetQueue);
+        msg = (TextMessage)mc.receive(TEST_TIMEOUT);
+        assertNotNull(msg);
+        msg = (TextMessage)mc.receive(TEST_TIMEOUT);
+        assertNotNull(msg);
+        msg = (TextMessage)mc.receive(TEST_TIMEOUT);
+        assertNull(msg);
+    }
 
    /**
      * Test that all messages but one message is moved from one queue to the other.
