@@ -213,7 +213,7 @@ public class A {
 				.hasArgs(2)
 				.withValueSeparator()
 				.withDescription(
-						"use value for given property. Can be used several times.")
+						"use value for given String property. Can be used several times.")
 				.create(CMD_SET_HEADER);
 
 		opts.addOption(property);
@@ -224,7 +224,7 @@ public class A {
 				.hasArgs(2)
 				.withValueSeparator()
 				.withDescription(
-						"use value for given property. Can be used several times.")
+						"use value for given Long property. Can be used several times.")
 				.create(CMD_SET_LONG_HEADER);
 
 		opts.addOption(longProperty);
@@ -235,7 +235,7 @@ public class A {
 				.hasArgs(2)
 				.withValueSeparator()
 				.withDescription(
-						"use value for given property. Can be used several times.")
+						"use value for given Integer property. Can be used several times.")
 				.create(CMD_SET_INT_HEADER);
 				
 		opts.addOption(intProperty);

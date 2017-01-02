@@ -33,16 +33,16 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
  -f,--find <arg>               Search for messages in queue with this
                                value in payload. Use with browse.
  -g,--get                      Get a message from destination
- -H <property=value>           use value for given property. Can be used
-                               several times.
- -I <property=value>           use value for given property. Can be used
-                               several times.
+ -H <property=value>           use value for given String property. Can be
+                               used several times.
+ -I <property=value>           use value for given Integer property. Can
+                               be used several times.
  -i,--priority <arg>           sets JMSPriority
  -J,--jndi <arg>               Connect via JNDI. Overrides -b and -A
                                options. Specify context file on classpath
  -j,--jms-headers              Print JMS headers
- -L <property=value>           use value for given property. Can be used
-                               several times.
+ -L <property=value>           use value for given Long property. Can be
+                               used several times.
  -l,--list-queues              List queues and topics on broker (OpenWire
                                only)
  -M,--move-queue <arg>         Move all messages from this to target
