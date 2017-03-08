@@ -67,7 +67,7 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
                                supported by platform. I.e. Azure Service
                                Bus. When set to false, the Move option is
                                NOT atomic.
- -t,--type <arg>               Message type to put, [bytes, text] -
+ -t,--type <arg>               Message type to put, [bytes, text, map] -
                                defaults to text
  -U,--user <arg>               Username to connect to broker
  -w,--wait <arg>               Time to wait on get operation. Default 50.
@@ -105,6 +105,10 @@ Example 7. Put file foo.bar as text message on queue q, with encoding EBCDIC CP0
 Example 8. Read all XML files in a folder input an put them on queue q. Files are deleted afterwards.
 
     $a -R "input/*.xml" q
+
+Example 9. Put file foo.json as map message on queue q
+
+    $a -p "@foo.json" -t map q
 
 #Use AMQP 1.0
 A defaults to ActiveMQ default protocol, OpenWire. You can also use AMQP 1.0.
