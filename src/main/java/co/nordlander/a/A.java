@@ -17,6 +17,7 @@ import java.util.Enumeration;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Map;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
