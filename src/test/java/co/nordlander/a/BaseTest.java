@@ -8,7 +8,12 @@ import static co.nordlander.a.A.CMD_PRIORITY;
 import static co.nordlander.a.A.CMD_PUT;
 import static co.nordlander.a.A.CMD_READ_FOLDER;
 import static co.nordlander.a.A.CMD_WAIT;
+<<<<<<< HEAD
 import static co.nordlander.a.A.CMD_SELECTOR;
+=======
+import static co.nordlander.a.A.CMD_TYPE;
+import static co.nordlander.a.A.TYPE_MAP;
+>>>>>>> c38ca63a72b14a088082f52f328d3780cc697b30
 import static org.junit.Assert.*;
 
 import java.io.File;
@@ -31,6 +36,7 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.jms.MapMessage;
 
 import org.apache.activemq.broker.BrokerService;
 import org.apache.commons.io.FileUtils;
@@ -377,7 +383,23 @@ public abstract class BaseTest {
         assertEquals(1,msgs.size());
         assertEquals("theOne",msgs.get(0).getText());
     }
-    
+
+    @Test
+    public void testSendMapMessage() throws Exception {
+        File folder = tempFolder.newFolder();
+        final String msgInJson = "{\"TYPE\":\"test\", \"ID\":1}";
+        final File file = new File(folder, "file1.json");
+        FileUtils.writeStringToFile(file, msgInJson, StandardCharsets.UTF_8);
+
+        final String cmdLine = getConnectCommand() + "-" + CMD_PUT + "@" + file.getAbsolutePath() + " -" + CMD_TYPE + " " + TYPE_MAP + " TEST.QUEUE";
+        a.run(cmdLine.split(" "));
+
+        MessageConsumer mc = session.createConsumer(testQueue);
+        MapMessage msg1 = (MapMessage)mc.receive(TEST_TIMEOUT);
+        assertEquals(msg1.getString("TYPE"), "test");
+        assertEquals(msg1.getInt("ID"), 1);
+    }
+
     @Test
     public void testReadFolder() throws Exception {
     	File folder = tempFolder.newFolder();

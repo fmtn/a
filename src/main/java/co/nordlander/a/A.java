@@ -17,6 +17,7 @@ import java.util.Enumeration;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Map;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -35,6 +36,8 @@ import javax.jms.TextMessage;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
 import org.apache.activemq.command.ActiveMQMessage;
@@ -122,6 +125,8 @@ public class A {
 	public static final String DEFAULT_COUNT_ALL = "0";
 	public static final String DEFAULT_WAIT = "50";
 	public static final String TYPE_TEXT = "text";
+	public static final String TYPE_BYTE = "byte";
+	public static final String TYPE_MAP = "map";
 	public static final String DEFAULT_TYPE = TYPE_TEXT;
 	public static final String DEFAULT_DATE_FORMAT = "yyyy MM dd HH:mm:ss";
 
@@ -564,10 +569,20 @@ public class A {
 					.substring(1)));
 			if (type.equals(TYPE_TEXT)) {
 				outMsg = sess.createTextMessage(new String(bytes, encoding));
-			} else {
+			} else if(type.equals(TYPE_BYTE)) {
 				BytesMessage bytesMsg = sess.createBytesMessage();
 				bytesMsg.writeBytes(bytes);
 				outMsg = bytesMsg;
+			} else if(type.equals(TYPE_MAP)) {
+				MapMessage mapMsg = sess.createMapMessage();
+				ObjectMapper mapper = new ObjectMapper();
+				Map<String, Object> msg = mapper.readValue(bytes, new TypeReference<Map<String, Object>>() { });
+				for (String key : msg.keySet()) {
+					mapMsg.setObject(key, msg.get(key));
+				}
+				outMsg = mapMsg;
+			} else {
+				throw new IllegalArgumentException(CMD_TYPE + ": " + type);
 			}
 		} else {
 			outMsg = sess.createTextMessage(data);

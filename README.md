@@ -67,7 +67,7 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
                                supported by platform. I.e. Azure Service
                                Bus. When set to false, the Move option is
                                NOT atomic.
- -t,--type <arg>               Message type to put, [bytes, text] -
+ -t,--type <arg>               Message type to put, [bytes, text, map] -
                                defaults to text
  -U,--user <arg>               Username to connect to broker
  -w,--wait <arg>               Time to wait on get operation. Default 50.
@@ -105,6 +105,14 @@ Example 7. Put file foo.bar as text message on queue q, with encoding EBCDIC CP0
 Example 8. Read all XML files in a folder input an put them on queue q. Files are deleted afterwards.
 
     $a -R "input/*.xml" q
+
+Example 9. Put file foo.json as map message on queue q
+
+    $a -p "@foo.json" -t map q
+    
+Example 10. Put a map message on a queue using json format.
+    
+    $a -p "{\"a\":\"a message tool\"}" -t map q
 
 #Use AMQP 1.0
 A defaults to ActiveMQ default protocol, OpenWire. You can also use AMQP 1.0.
@@ -154,7 +162,7 @@ This way, you can even connect to non ActiveMQ/AMQP brokers. You simply need to 
 2. create a file called "a" on your path (~/bin/a or what have you)
 ```  
 #!/bin/sh
-java -jar ~/bin/a-1.2.0-jar-with-dependencies.jar "$@"
+java -jar ~/bin/a-1.3.2-jar-with-dependencies.jar "$@"
 ```
 3. chmod +x a
 4. Run a from any place.
@@ -164,7 +172,7 @@ java -jar ~/bin/a-1.2.0-jar-with-dependencies.jar "$@"
 2. create a file called "a.bat" on your path, i.e. c:\bin
 ```
 @echo off
-java -jar c:\bin\a-1.2.0-jar-with-dependencies.jar %*
+java -jar c:\bin\a-1.3.2-jar-with-dependencies.jar %*
 ```
 3. Run from any place.
 
@@ -173,6 +181,6 @@ java -jar c:\bin\a-1.2.0-jar-with-dependencies.jar %*
 Given you have a truststore and a keystore in JKS format, you can edit your a start script, or run it manually like this.
 Note that the -Djavax parameters has to come before -jar. 
 ```
-java -Djavax.net.ssl.keyStore=/Users/petter/client.jks -Djavax.net.ssl.keyStorePassword=password -Djavax.net.ssl.trustStore=/Users/petter/truststore.jks -Djavax.net.ssl.trustStorePassword=password -jar a-1.2.0-jar-with-dependencies.jar -b ssl://example.org:61618 MY.QUEUE 
+java -Djavax.net.ssl.keyStore=/Users/petter/client.jks -Djavax.net.ssl.keyStorePassword=password -Djavax.net.ssl.trustStore=/Users/petter/truststore.jks -Djavax.net.ssl.trustStorePassword=password -jar a-1.3.2-jar-with-dependencies.jar -b ssl://example.org:61618 MY.QUEUE 
 
 ```
