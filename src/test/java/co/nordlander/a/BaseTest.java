@@ -8,6 +8,7 @@ import static co.nordlander.a.A.CMD_PRIORITY;
 import static co.nordlander.a.A.CMD_PUT;
 import static co.nordlander.a.A.CMD_READ_FOLDER;
 import static co.nordlander.a.A.CMD_WAIT;
+import static co.nordlander.a.A.CMD_SELECTOR;
 import static org.junit.Assert.*;
 
 import java.io.File;
@@ -144,6 +145,26 @@ public abstract class BaseTest {
         a.run(cmdLine.split(" "));
         String out = output.grab();
         assertTrue("Payload test expected",out.contains("Payload:"+LN+"test"));
+    }
+    
+    @Test
+    public void testGetQueueWithSelector() throws Exception{
+        MessageProducer mp = session.createProducer(testQueue);
+        
+        Message theOne = session.createTextMessage("theOne"); // message 1
+        theOne.setStringProperty("identity","theOne");
+        Message theOther = session.createTextMessage("theOther"); // message 2
+        theOther.setStringProperty("identity","theOther");
+        
+        mp.send(theOne);
+        mp.send(theOther);
+        
+        String cmdLine = getConnectCommand() + "-" + CMD_GET + " -" + CMD_SELECTOR + " identity='theOne'" + " -" +
+                CMD_WAIT + " 2000" + " TEST.QUEUE";
+        a.run(cmdLine.split(" "));
+        String out = output.grab();
+        assertTrue("Payload test expected",out.contains("Payload:"+LN+"theOne"));
+        assertFalse("The other not expected", out.contains("Payload:" + LN + "theOther"));
     }
 
     @Test
@@ -383,7 +404,7 @@ public abstract class BaseTest {
     	assertEquals(1,remainingFiles.length); // one file left - the .dat one
     	assertEquals("file3.dat",remainingFiles[0].getName());
     }
-
+    
     /**
      * Needed to split command line arguments by space, but not quoted.
      * @param cmdLine command line
