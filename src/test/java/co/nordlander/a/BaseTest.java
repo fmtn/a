@@ -1,19 +1,22 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package co.nordlander.a;
 
-import static co.nordlander.a.A.CMD_COPY_QUEUE;
-import static co.nordlander.a.A.CMD_COUNT;
-import static co.nordlander.a.A.CMD_GET;
-import static co.nordlander.a.A.CMD_MOVE_QUEUE;
-import static co.nordlander.a.A.CMD_PRIORITY;
-import static co.nordlander.a.A.CMD_PUT;
-import static co.nordlander.a.A.CMD_READ_FOLDER;
-import static co.nordlander.a.A.CMD_WAIT;
-<<<<<<< HEAD
-import static co.nordlander.a.A.CMD_SELECTOR;
-=======
-import static co.nordlander.a.A.CMD_TYPE;
-import static co.nordlander.a.A.TYPE_MAP;
->>>>>>> c38ca63a72b14a088082f52f328d3780cc697b30
+import static co.nordlander.a.A.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
@@ -27,6 +30,7 @@ import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -116,6 +120,19 @@ public abstract class BaseTest {
         TextMessage msg = (TextMessage)mc.receive(TEST_TIMEOUT);
         assertEquals("test",msg.getText());
     }
+    
+    @Test
+    public void testPutBytesQueue() throws Exception {
+    	String cmdLine = getConnectCommand() + "-" + CMD_PUT + " \"test\" -" + CMD_TYPE + " " + TYPE_BYTES + " TEST.QUEUE";
+    	System.out.println("Testing cmd: " + cmdLine);
+    	a.run(cmdLine.split(" "));
+    	MessageConsumer mc = session.createConsumer(testQueue);
+        BytesMessage msg = (BytesMessage)mc.receive(TEST_TIMEOUT);
+        byte[] bytes = new byte[(int) msg.getBodyLength()];
+        msg.readBytes(bytes);
+        assertEquals("test",new String(bytes, StandardCharsets.UTF_8));
+    
+    }
 
     @Test
     public void testPutWithPriority() throws Exception{
@@ -187,7 +204,7 @@ public abstract class BaseTest {
         MessageProducer mp = session.createProducer(testTopic);
         mp.send(testMessage);
         String result = resultString.get();
-        assertTrue("Payload test expected",result.contains("Payload:"+LN+"test"));
+        assertTrue("Payload test expected", result.contains("Payload:" + LN + "test"));
     }
 
     /**

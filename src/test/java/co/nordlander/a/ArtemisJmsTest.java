@@ -18,6 +18,7 @@
 package co.nordlander.a;
 
 import javax.jms.ConnectionFactory;
+import javax.jms.Message;
 import javax.jms.MessageProducer;
 
 import org.apache.activemq.artemis.api.core.SimpleString;
@@ -31,6 +32,8 @@ import static co.nordlander.a.A.CMD_BROKER;
 import static co.nordlander.a.A.CMD_COUNT;
 import static co.nordlander.a.A.CMD_GET;
 import static org.junit.Assert.assertEquals;
+
+import java.util.Arrays;
 
 public class ArtemisJmsTest extends BaseTest{
 
@@ -69,6 +72,8 @@ public class ArtemisJmsTest extends BaseTest{
       MessageProducer mp = session.createProducer(testQueue);
       mp.send(testMessage);
       mp.send(testMessage);
+      MessageDumpWriter writer = new MessageDumpWriter();
+      System.out.println(writer.messagesToJsonString(Arrays.asList((Message)testMessage)));
       a.run(cmdLine.split(" "));
       String out = output.grab().replaceFirst("Operation completed in .+","");
 

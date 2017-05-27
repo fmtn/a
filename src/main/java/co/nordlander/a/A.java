@@ -36,7 +36,9 @@ import javax.jms.TextMessage;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
@@ -125,7 +127,7 @@ public class A {
 	public static final String DEFAULT_COUNT_ALL = "0";
 	public static final String DEFAULT_WAIT = "50";
 	public static final String TYPE_TEXT = "text";
-	public static final String TYPE_BYTE = "byte";
+	public static final String TYPE_BYTES = "bytes";
 	public static final String TYPE_MAP = "map";
 	public static final String DEFAULT_TYPE = TYPE_TEXT;
 	public static final String DEFAULT_DATE_FORMAT = "yyyy MM dd HH:mm:ss";
@@ -148,7 +150,7 @@ public class A {
 		opts.addOption(CMD_PUT, "put", true,
 				"Put a message. Specify data. if starts with @, a file is assumed and loaded");
 		opts.addOption(CMD_TYPE, "type", true,
-				"Message type to put, [bytes, text] - defaults to text");
+				"Message type to put, [bytes, text, map] - defaults to text");
 		opts.addOption(CMD_ENCODING, "encoding", true,
 				"Encoding of input file data. Default UTF-8");
 		opts.addOption(CMD_NON_PERSISTENT, "non-persistent", false,
@@ -563,29 +565,9 @@ public class A {
 		Message outMsg = null;
 		// figure out input data
 		if (data.startsWith("@")) {
-			
-			// Load file.
-			byte[] bytes = FileUtils.readFileToByteArray(new File(data
-					.substring(1)));
-			if (type.equals(TYPE_TEXT)) {
-				outMsg = sess.createTextMessage(new String(bytes, encoding));
-			} else if(type.equals(TYPE_BYTE)) {
-				BytesMessage bytesMsg = sess.createBytesMessage();
-				bytesMsg.writeBytes(bytes);
-				outMsg = bytesMsg;
-			} else if(type.equals(TYPE_MAP)) {
-				MapMessage mapMsg = sess.createMapMessage();
-				ObjectMapper mapper = new ObjectMapper();
-				Map<String, Object> msg = mapper.readValue(bytes, new TypeReference<Map<String, Object>>() { });
-				for (String key : msg.keySet()) {
-					mapMsg.setObject(key, msg.get(key));
-				}
-				outMsg = mapMsg;
-			} else {
-				throw new IllegalArgumentException(CMD_TYPE + ": " + type);
-			}
+			outMsg = createMessageFromFile(data, type, encoding);
 		} else {
-			outMsg = sess.createTextMessage(data);
+			outMsg = createMessageFromInput(data, type, encoding);
 		}
 
 		MessageProducer mp = sess.createProducer(createDestination(cmdLine
@@ -636,6 +618,56 @@ public class A {
 		} else {
 			mp.send(outMsg);
 		}
+	}
+
+	protected Message createMessageFromInput(final String data, String type, String encoding)
+			throws JMSException, UnsupportedEncodingException, IOException, JsonParseException, JsonMappingException {
+		Message outMsg = null;
+		if( type.equals(TYPE_TEXT)) {
+			outMsg = sess.createTextMessage(data);
+		} else if ( type.equals(TYPE_BYTES)) {
+			BytesMessage bytesMsg = sess.createBytesMessage();
+			bytesMsg.writeBytes(data.getBytes(encoding));
+			outMsg = bytesMsg;
+		} else if( type.equals(TYPE_MAP)) {
+			MapMessage mapMsg = sess.createMapMessage();
+			ObjectMapper mapper = new ObjectMapper();
+			Map<String, Object> msg = mapper.readValue(data, new TypeReference<Map<String, Object>>() { });
+			for (String key : msg.keySet()) {
+				mapMsg.setObject(key, msg.get(key));
+			}
+			outMsg = mapMsg;
+		} else {
+			throw new IllegalArgumentException(CMD_TYPE + ": " + type);
+		}
+		return outMsg;
+	}
+
+	protected Message createMessageFromFile(final String data, String type, String encoding)
+			throws IOException, JMSException, UnsupportedEncodingException, JsonParseException, JsonMappingException {
+		
+		Message outMsg = null;
+		// Load file.
+		byte[] bytes = FileUtils.readFileToByteArray(new File(data
+				.substring(1)));
+		if (type.equals(TYPE_TEXT)) {
+			outMsg = sess.createTextMessage(new String(bytes, encoding));
+		} else if(type.equals(TYPE_BYTES)) {
+			BytesMessage bytesMsg = sess.createBytesMessage();
+			bytesMsg.writeBytes(bytes);
+			outMsg = bytesMsg;
+		} else if(type.equals(TYPE_MAP)) {
+			MapMessage mapMsg = sess.createMapMessage();
+			ObjectMapper mapper = new ObjectMapper();
+			Map<String, Object> msg = mapper.readValue(bytes, new TypeReference<Map<String, Object>>() { });
+			for (String key : msg.keySet()) {
+				mapMsg.setObject(key, msg.get(key));
+			}
+			outMsg = mapMsg;
+		} else {
+			throw new IllegalArgumentException(CMD_TYPE + ": " + type);
+		}
+		return outMsg;
 	}
 
 	// Accepts a plain name, queue://<name>, topic://<name> etc.
