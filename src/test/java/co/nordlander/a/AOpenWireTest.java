@@ -37,6 +37,11 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+/**
+ * Tests A with OpenWire protocol. I.e. ActiveMQ 5 native protocol.
+ * @author Petter Nordlander
+ *
+ */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath:activemq.xml"})
 @DirtiesContext(classMode= DirtiesContext.ClassMode.AFTER_CLASS)

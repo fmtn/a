@@ -1,0 +1,53 @@
+[
+    {
+        "JMSCorrelationID": "MyCorrelationId",
+        "JMSDeliveryMode": 2,
+        "JMSExpiration": 0,
+        "JMSMessageID": "ID:fbdaf2c4-43d3-11e7-8789-2e3c47bd90a7",
+        "JMSPriority": 4,
+        "JMSRedelivered": false,
+        "JMSTimestamp": 1495996340068,
+        "JMSType": "myJmsType",
+        "body": "Utf-8 Text - 😁",
+        "boolProperties": {},
+        "byteProperties": {},
+        "doubleProperties": {
+            "myDoubleProperty": 3.141592653589793
+        },
+        "floatProperties": {},
+        "intProperties": {
+            "myIntProperty": 42
+        },
+        "longProperties": {},
+        "objectProperties": {},
+        "shortProperties": {},
+        "stringProperties": {
+            "JMSXDeliveryCount": "1",
+            "myStringProperty": "String Value - å"
+        },
+        "type": "TextMessage"
+    },
+    {
+        "JMSCorrelationID": null,
+        "JMSDeliveryMode": 2,
+        "JMSExpiration": 0,
+        "JMSMessageID": "ID:fbdd63c5-43d3-11e7-8789-2e3c47bd90a7",
+        "JMSPriority": 4,
+        "JMSRedelivered": false,
+        "JMSTimestamp": 1495996340084,
+        "JMSType": null,
+        "body": "VXRmLTggVGV4dCAtIPCfmIE=",
+        "boolProperties": {},
+        "byteProperties": {},
+        "doubleProperties": {},
+        "floatProperties": {},
+        "intProperties": {},
+        "longProperties": {},
+        "objectProperties": {},
+        "shortProperties": {},
+        "stringProperties": {
+            "JMSXDeliveryCount": "1"
+        },
+        "type": "BytesMessage"
+    }
+]

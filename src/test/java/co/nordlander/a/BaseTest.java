@@ -17,11 +17,18 @@
 package co.nordlander.a;
 
 import static co.nordlander.a.A.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -33,23 +40,30 @@ import java.util.regex.Pattern;
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.MapMessage;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
+import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.jms.MapMessage;
 
 import org.apache.activemq.broker.BrokerService;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.io.Files;
 
 /**
  * A base class with all the test cases.
@@ -102,6 +116,10 @@ public abstract class BaseTest {
         targetQueue = session.createQueue("TARGET.QUEUE");
         testMessage = session.createTextMessage("test");
         connection.start();
+
+        clearQueue(targetQueue);
+        clearQueue(testQueue);
+        clearQueue(sourceQueue);
     }
 
     @After
@@ -126,6 +144,7 @@ public abstract class BaseTest {
     	String cmdLine = getConnectCommand() + "-" + CMD_PUT + " \"test\" -" + CMD_TYPE + " " + TYPE_BYTES + " TEST.QUEUE";
     	System.out.println("Testing cmd: " + cmdLine);
     	a.run(cmdLine.split(" "));
+
     	MessageConsumer mc = session.createConsumer(testQueue);
         BytesMessage msg = (BytesMessage)mc.receive(TEST_TIMEOUT);
         byte[] bytes = new byte[(int) msg.getBodyLength()];
@@ -444,6 +463,125 @@ public abstract class BaseTest {
     	assertEquals("file3.dat",remainingFiles[0].getName());
     }
     
+    @Test
+    public void testDumpMessages() throws Exception {
+    	final String testCorrId = "MyCorrelationId";
+    	final String stringPropertyValue = "String Value - å";
+    	final String utfText = "Utf-8 Text - 😁";
+    	final Queue replyQueue = session.createQueue("test.reply.queue");
+    	final TextMessage tm1 = session.createTextMessage(utfText);
+    	
+    	tm1.setStringProperty("myStringProperty", stringPropertyValue);
+    	tm1.setIntProperty("myIntProperty", 42);
+    	tm1.setDoubleProperty("myDoubleProperty", Math.PI);
+    	tm1.setJMSType("myJmsType");
+    	tm1.setJMSCorrelationID(testCorrId);
+    	tm1.setJMSDeliveryMode(DeliveryMode.PERSISTENT);
+    	tm1.setJMSPriority(2);
+    	tm1.setJMSReplyTo(replyQueue);
+    	
+    	BytesMessage bm1 = session.createBytesMessage();
+    	bm1.writeBytes(utfText.getBytes(StandardCharsets.UTF_8));
+    	
+    	MessageProducer mp = session.createProducer(testQueue);
+        mp.send(tm1);
+        mp.send(bm1);
+        File folder = tempFolder.newFolder();
+        File dumpFile = new File(folder, "dump.json");
+        
+        String cmdLine = getConnectCommand() + "-" + CMD_WRITE_DUMP + " " + dumpFile.getAbsolutePath() + " -" +
+                CMD_WAIT + " 2000 -" + CMD_COUNT + " 2" + " TEST.QUEUE";
+        a.run(cmdLine.split(" "));
+     
+        ObjectMapper om = new ObjectMapper();
+        
+        String result = FileUtils.readFileToString(dumpFile, StandardCharsets.UTF_8);
+        System.out.println(result);
+        List<MessageDump> resultMsgs = Arrays.asList(om.readValue(result, MessageDump[].class));
+        assertEquals(2, resultMsgs.size());
+        
+        MessageDump resultMsg1 = resultMsgs.get(0);
+        assertEquals("TextMessage", resultMsg1.type);
+        assertEquals(utfText, resultMsg1.body);
+        assertEquals(stringPropertyValue, resultMsg1.stringProperties.get("myStringProperty"));
+        
+        // decode obj property to List and check consistency. 
+        // TODO Actually only works with OpenWire, so ignoring this. Other implementations may only support String, Integer etc.
+//        String objectPropertyString = resultMsg1.objectProperties.get("myObjectProperty");
+ //       List<String> decodedObjProperty = SerializationUtils.deserialize(Base64.decodeBase64(objectPropertyString));
+ //       assertEquals(testList, decodedObjProperty);
+        
+        assertEquals(new Integer(DeliveryMode.PERSISTENT), resultMsg1.JMSDeliveryMode);
+        assertEquals(testCorrId, resultMsg1.JMSCorrelationID);
+        
+        MessageDump resultMsg2 = resultMsgs.get(1);
+        assertEquals("BytesMessage", resultMsg2.type);
+        assertEquals(utfText, new String(Base64.decodeBase64(resultMsg2.body), StandardCharsets.UTF_8));
+    }
+    
+    @Test
+    public void testRestoreDump() throws IOException, InterruptedException, JMSException {
+    	// place file where it can be reached by a - that is on file system, not classpath.
+    	File dumpFile = tempFolder.newFile("testdump.json");
+    	InputStream jsonStream = BaseTest.class.getClassLoader().getResourceAsStream("testdump.json");
+    	FileUtils.writeByteArrayToFile(dumpFile, IOUtils.toByteArray(jsonStream));
+    	IOUtils.closeQuietly(jsonStream);
+    	
+    	final String utfText = "Utf-8 Text - 😁";
+    	
+    	String cmdLine = getConnectCommand() + "-" + CMD_RESTORE_DUMP + " " + dumpFile.getAbsolutePath() + " " + "TEST.QUEUE";
+        a.run(cmdLine.split(" "));
+    	
+        MessageConsumer mc = session.createConsumer(testQueue);
+        TextMessage msg1 = (TextMessage) mc.receive(TEST_TIMEOUT);
+        assertNotNull(msg1);
+        // msgId is always recreated in JMS - do not test!
+        // JMS Timestamp also recreated - do not test!
+        
+        assertEquals("MyCorrelationId", msg1.getJMSCorrelationID());
+        assertEquals(2, msg1.getJMSDeliveryMode());
+        assertEquals(4, msg1.getJMSPriority());
+        assertEquals("myJmsType", msg1.getJMSType());
+        assertEquals(Math.PI, msg1.getDoubleProperty("myDoubleProperty"), 0.000000000000001);
+        assertEquals(42, msg1.getIntProperty("myIntProperty"));
+        assertEquals(utfText, msg1.getText());
+        assertEquals("String Value - å", msg1.getStringProperty("myStringProperty"));
+        BytesMessage msg2 = (BytesMessage) mc.receive(TEST_TIMEOUT);
+        assertNotNull(msg2);
+        byte[] msg2Data = new byte[(int) msg2.getBodyLength()];
+        msg2.readBytes(msg2Data);
+        assertEquals(utfText, new String(msg2Data, StandardCharsets.UTF_8));
+        mc.close();
+    }
+    
+    @Test
+    public void testDumpMessagesAndTransform() throws Exception {
+    	final String text = "A - JMS util";
+    	final TextMessage tm1 = session.createTextMessage(text);
+    	tm1.setStringProperty("changeme", "old value");
+    	
+    	MessageProducer mp = session.createProducer(testQueue);
+        mp.send(tm1);
+        File folder = tempFolder.newFolder();
+        File dumpFile = new File(folder, "dump.json");
+        String script = "\"msg.body=msg.body.replace('A','B');msg.stringProperties.put('changeme','new');\"";
+        
+        String cmdLine = getConnectCommand() + "-" + CMD_WRITE_DUMP + " " + dumpFile.getAbsolutePath() + " -" +
+                CMD_WAIT + " 2000 -" + CMD_COUNT + " 1 -" + CMD_TRANSFORM_SCRIPT + " " + script + " TEST.QUEUE";
+        a.run(cmdLine.split(" "));
+     
+        ObjectMapper om = new ObjectMapper();
+        
+        String result = FileUtils.readFileToString(dumpFile, StandardCharsets.UTF_8);
+        System.out.println(result);
+        List<MessageDump> resultMsgs = Arrays.asList(om.readValue(result, MessageDump[].class));
+        assertEquals(1, resultMsgs.size());
+        
+        MessageDump resultMsg1 = resultMsgs.get(0);
+        assertEquals("B - JMS util", resultMsg1.body);
+        assertEquals("new", resultMsg1.stringProperties.get("changeme"));
+    }
+    
     /**
      * Needed to split command line arguments by space, but not quoted.
      * @param cmdLine command line
@@ -470,5 +608,15 @@ public abstract class BaseTest {
             msgs.add(msg);
         }
         return msgs;
+    }
+    
+    protected void clearQueue(final Destination dest) throws JMSException {
+    	MessageConsumer mc = session.createConsumer(dest);
+    	int cnt = 0;
+    	while( mc.receive(1L) != null) {
+    		cnt++;
+    	}
+    	mc.close();
+    	System.out.println(cnt + " messages cleared from " + dest.toString());
     }
 }

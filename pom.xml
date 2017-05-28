@@ -11,8 +11,8 @@
     <deb.bin>/usr/bin/${project.artifactId}</deb.bin>
     <deb.skip>true</deb.skip>
     <artemis.version>1.4.0</artemis.version>
-    <maven.compiler.source>1.6</maven.compiler.source>
-    <maven.compiler.target>1.6</maven.compiler.target>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
   </properties>
 
   <dependencies>

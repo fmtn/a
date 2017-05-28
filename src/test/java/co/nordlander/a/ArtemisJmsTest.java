@@ -35,6 +35,11 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
 
+/**
+ * Tests A with Artemis/HornetQ native protocol.
+ * @author Petter Nordlander
+ *
+ */
 public class ArtemisJmsTest extends BaseTest{
 
    protected static final String AMQ_ARTEMIS_URL = "tcp://localhost:61616";

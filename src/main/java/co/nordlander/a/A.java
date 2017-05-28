@@ -8,16 +8,20 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.text.Format;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Map;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -35,11 +39,8 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.script.ScriptException;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
 import org.apache.activemq.command.ActiveMQMessage;
@@ -65,9 +66,15 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.AgeFileFilter;
 import org.apache.commons.io.filefilter.AndFileFilter;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.qpid.amqp_1_0.jms.impl.ConnectionFactoryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * A - A JMS testing and admin tool. Primarily built for use with ActiveMQ.
@@ -115,11 +122,14 @@ public class A {
 	public static final String CMD_PUT = "p";
 	public static final String CMD_REPLY_TO = "r";
 	public static final String CMD_READ_FOLDER = "R";
+	public static final String CMD_TRANSFORM_SCRIPT = "S";
 	public static final String CMD_SELECTOR = "s";
 	public static final String CMD_NO_TRANSACTION_SUPPORT = "T";
 	public static final String CMD_TYPE = "t";
 	public static final String CMD_USER = "U";
 	public static final String CMD_WAIT = "w";
+	public static final String CMD_RESTORE_DUMP = "X";
+	public static final String CMD_WRITE_DUMP = "x";
 	
 	// Various constants
 	public static final long SLEEP_TIME_BETWEEN_FILE_CHECK = 1000L;
@@ -247,7 +257,15 @@ public class A {
 				
 		opts.addOption(intProperty);
 		
-
+		opts.addOption(CMD_WRITE_DUMP, "write-dump", true, "Write a dump of messages to a file. "
+						+ "Will preserve metadata and type. Can  be used with transformation option" );
+		
+		opts.addOption(CMD_RESTORE_DUMP, "restore-dump", true, "Restore a dump of messages in a file," + 
+						"created with -" + CMD_WRITE_DUMP + ". Can be used with transformation option.");
+		
+		opts.addOption(CMD_TRANSFORM_SCRIPT, "transform-script", true, "JavaScript code (or @path/to/file.js). "
+					+"Used to transform messages with the dump options. Access message in JavaScript by msg.JMSType = 'foobar';");
+		
 		if (args.length == 0) {
 			HelpFormatter helpFormatter = new HelpFormatter();
 			helpFormatter.printHelp(
@@ -286,6 +304,10 @@ public class A {
 				executeListQueues(cmdLine);
 			} else if (cmdLine.hasOption(CMD_READ_FOLDER)) {
 				executeReadFolder(cmdLine);
+			} else if (cmdLine.hasOption(CMD_WRITE_DUMP)) {
+				executeWriteDump(cmdLine);
+			} else if (cmdLine.hasOption(CMD_RESTORE_DUMP)) {
+				executeReadDump(cmdLine);
 			} else {
 				executeBrowse(cmdLine);
 			}
@@ -549,6 +571,103 @@ public class A {
 				break;
 			}
 		} while( endTime > System.currentTimeMillis());
+	}
+	
+	/**
+	 * Executes a dump restore. 
+	 * 
+	 * Can be used with transactional on or off to achive a all or nothing-restore.
+	 * Very large restores may not be possible using transactions, but can be done by turning it off.
+	 * 
+	 * @param cmdLine
+	 * @throws JsonParseException
+	 * @throws JsonMappingException
+	 * @throws IOException
+	 * @throws ScriptException
+	 * @throws JMSException
+	 */
+	protected void executeReadDump(CommandLine cmdLine) throws JsonParseException, JsonMappingException, IOException, ScriptException, JMSException {
+		File dumpFile;
+		try{
+			dumpFile = new File(cmdLine.getOptionValue(CMD_RESTORE_DUMP));
+			if (!dumpFile.exists()) {
+				output("Dump file " + dumpFile.getAbsolutePath() + " does not exist");
+				return;
+			}
+		} catch ( Exception e) {
+			output("Restore option requires a path to a JSON dump file.");
+			return;
+		}
+		
+		String dumpJson = FileUtils.readFileToString(dumpFile, StandardCharsets.UTF_8);
+		MessageDumpReader dumpReader = new MessageDumpReader(sess);
+		List<MessageDump> dumpMessages = dumpReader.toDumpMessages(dumpJson);
+		if( cmdLine.hasOption(CMD_TRANSFORM_SCRIPT)) {
+			MessageDumpTransformer transformer = new MessageDumpTransformer();
+			transformer.transformMessages(dumpMessages, cmdLine.getOptionValue(CMD_TRANSFORM_SCRIPT));
+		}
+		List<Message> messages = dumpReader.toMessages(dumpMessages);
+		Destination destination = createDestination(cmdLine.getArgs()[0]);
+		MessageProducer mp = tsess != null ? tsess.createProducer(destination) : sess.createProducer(destination);
+		
+		for (Message message : messages) {
+			mp.send(message);
+		}
+		
+		if (tsess != null){
+			tsess.commit();
+		}
+		
+		mp.close();
+		output(messages.size() + " messages restored to " + cmdLine.getArgs()[0]);
+	}
+
+	protected void executeWriteDump(CommandLine cmdLine) throws JMSException, IOException, ScriptException {
+		
+		List<Message> msgs = consumeMessages(cmdLine);
+		
+		if( msgs.isEmpty()) {
+			output("No messages found - no file written");
+		} else {
+			MessageDumpWriter mdw = new MessageDumpWriter();
+			List<MessageDump> dumpMessages = mdw.toDumpMessages(msgs);
+			if( cmdLine.hasOption(CMD_TRANSFORM_SCRIPT)) {
+				MessageDumpTransformer transformer = new MessageDumpTransformer();
+				transformer.transformMessages(dumpMessages, cmdLine.getOptionValue(CMD_TRANSFORM_SCRIPT));
+			}
+			
+			final String jsonDump = mdw.toJson(dumpMessages);
+			String filePath = cmdLine.getOptionValue(CMD_WRITE_DUMP);
+			FileUtils.writeStringToFile(new File(filePath), jsonDump, StandardCharsets.UTF_8);
+			output(msgs.size() + " messages written to " + filePath);
+		}
+	}
+
+	protected List<Message> consumeMessages(CommandLine cmdLine) throws JMSException {
+		Destination dest = createDestination(cmdLine.getArgs()[0]);
+		MessageConsumer mq = null;
+		if (cmdLine.hasOption(CMD_SELECTOR)) { // Selectors
+			mq = sess.createConsumer(dest, cmdLine.getOptionValue(CMD_SELECTOR));
+		} else {
+			mq = sess.createConsumer(dest);
+		}
+		int count = Integer.parseInt(cmdLine.getOptionValue(CMD_COUNT,
+				DEFAULT_COUNT_GET));
+		long wait = Long.parseLong(cmdLine.getOptionValue(CMD_WAIT,
+				DEFAULT_WAIT));
+		
+		List<Message> msgs = new ArrayList<Message>();
+		int i = 0;
+		while (i < count || i == 0) {
+			Message msg = mq.receive(wait);
+			if (msg == null) {
+				break;
+			} else {
+				msgs.add(msg);
+				++i;
+			}
+		}
+		return msgs;
 	}
 	
 	protected void putData(final String data, final CommandLine cmdLine) throws IOException,
@@ -971,15 +1090,11 @@ public class A {
 		output.output(args);
 	}
 
-	// Byte flippin magic. Gotta love it.
 	protected String bytesToHex(byte[] bytes) {
-		final char[] hexArray = "0123456789ABCDEF".toCharArray();
-		char[] hexChars = new char[bytes.length * 2];
-		for (int j = 0; j < bytes.length; j++) {
-			int v = bytes[j] & 0xFF;
-			hexChars[j * 2] = hexArray[v >>> 4];
-			hexChars[j * 2 + 1] = hexArray[v & 0x0F];
-		}
-		return new String(hexChars);
+		StringBuilder sb = new StringBuilder();
+	    for (byte b : bytes) {
+	        sb.append(String.format("%02X ", b));
+	    }
+	    return sb.toString();
 	}
 }
