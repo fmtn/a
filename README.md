@@ -181,7 +181,7 @@ This way, you can even connect to non ActiveMQ/AMQP brokers. You simply need to 
 2. create a file called "a" on your path (~/bin/a or what have you)
 ```  
 #!/bin/sh
-java -jar ~/bin/a-1.3.2-jar-with-dependencies.jar "$@"
+java -jar ~/bin/a-1.4.0-jar-with-dependencies.jar "$@"
 ```
 3. chmod +x a
 4. Run a from any place.
@@ -191,7 +191,7 @@ java -jar ~/bin/a-1.3.2-jar-with-dependencies.jar "$@"
 2. create a file called "a.bat" on your path, i.e. c:\bin
 ```
 @echo off
-java -jar c:\bin\a-1.3.2-jar-with-dependencies.jar %*
+java -jar c:\bin\a-1.4.0-jar-with-dependencies.jar %*
 ```
 3. Run from any place.
 
