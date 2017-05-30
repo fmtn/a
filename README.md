@@ -13,8 +13,8 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
        [-C <arg>] [-c <arg>] [-D <arg>] [-e <arg>] [-F <arg>] [-f <arg>]
        [-g] [-H <property=value>] [-I <property=value>] [-i <arg>] [-J
        <arg>] [-j] [-L <property=value>] [-l] [-M <arg>] [-n] [-O] [-o
-       <arg>] [-P <arg>] [-p <arg>] [-R <arg>] [-r <arg>] [-s <arg>] [-T]
-       [-t <arg>] [-U <arg>] [-w <arg>]
+       <arg>] [-P <arg>] [-p <arg>] [-R <arg>] [-r <arg>] [-S <arg>] [-s
+       <arg>] [-T] [-t <arg>] [-U <arg>] [-w <arg>] [-X <arg>] [-x <arg>]
  -A,--amqp                     Set protocol to AMQP. Defaults to OpenWire
  -a,--artemis-core             Set protocol to ActiveMQ Artemis Core.
                                Defaults to OpenWire
@@ -62,6 +62,10 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
                                '?'. If no path is given, current directory
                                is assumed.
  -r,--reply-to <arg>           Set reply to destination, i.e. queue:reply
+ -S,--transform-script <arg>   JavaScript code (or @path/to/file.js). Used
+                               to transform messages with the dump
+                               options. Access message in JavaScript by
+                               msg.JMSType = 'foobar';
  -s,--selector <arg>           Browse or get with selector
  -T,--no-transaction-support   Set to disable transactions if not
                                supported by platform. I.e. Azure Service
@@ -72,6 +76,12 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
  -U,--user <arg>               Username to connect to broker
  -w,--wait <arg>               Time to wait on get operation. Default 50.
                                0 equals infinity
+ -X,--restore-dump <arg>       Restore a dump of messages in a
+                               file,created with -x. Can be used with
+                               transformation option, count and selectors.
+ -x,--write-dump <arg>         Write a dump of messages to a file. Will
+                               preserve metadata and type. Can  be used
+                               with transformation option
 ```
 
 Example 1. Put message with payload "foobar" to queue q on local broker:
@@ -114,14 +124,23 @@ Example 10. Put a map message on a queue using json format.
     
     $a -p "{\"a\":\"a message tool\"}" -t map q
 
-#Use AMQP 1.0
+Example 11. Backup/dump messages on a queue with metadata
+    $a -x dump.json q
+
+Example 12. Restore dump of messages with metadata to a queue
+    $a -X dump.json q2
+
+Example 12. Restore and transform messagse
+    $a -X dump.json -S @transform.js q2
+
+## Use AMQP 1.0
 A defaults to ActiveMQ default protocol, OpenWire. You can also use AMQP 1.0.
 In theory, it should work with all AMQP 1.0 compliant brokers. It does not work with older versions of AMQP.
 
     $a -A -b "amqp://guest:guest@localhost:5672" -p "foobar" q
     
     
-#Azure Service Bus
+## Azure Service Bus
 Service Bus supports AMQP 1.0 so it's possible to use A to connect.
 However, it does not support transactions, so the -T option has to be set to deal with that.
 
@@ -136,14 +155,14 @@ Example command to send a message to Azure Service Bus:
 A word of warning! There are some features not working with AMQP 1.0 in Service Bus. Some of which are mandatory to support the JMS API fully.
 This means some of the features of A will not work - or behave strangely.
 
-#Use Artemis Core
+## Use Artemis Core
 Use Artemis core protocol (HornetQ) with the -a option.
 
     $a -a -b "tcp://localhost:61616" -p "foobar" q
 
 Please note that this won't auto deploy the queue in current versions of Artemis. Using OpenWire will autodeploy the queue.
 
-#Use JNDI to connect
+## Use JNDI to connect
 To connect in a protocol agnostic way, you can specify a JNDI file that points out the JMS provider and settings.
 
 Simply create a jndi.properties file "at classpath". Then link to it jusing the -J (--jndi) option. Please name your
@@ -153,11 +172,11 @@ ConnectionFactory "connectionFactory". Otherwise, the name has to be supplied us
 
 This way, you can even connect to non ActiveMQ/AMQP brokers. You simply need to provide a JNDI config and the client at classpath.
 
-#Build
+## Build
 
-    $mvn install
+    $mvn clean install
 
-#Make the jar runnable from *nix-shell as in examples:
+## Make the jar runnable from *nix-shell as in examples:
 1. copy the jar target/a-VERSION-with-dependencies.jar to someplace. i.e. ~/bin/
 2. create a file called "a" on your path (~/bin/a or what have you)
 ```  
@@ -167,7 +186,7 @@ java -jar ~/bin/a-1.3.2-jar-with-dependencies.jar "$@"
 3. chmod +x a
 4. Run a from any place.
 
-#Make the jar runnable in windows console
+## Make the jar runnable in windows console
 1. copy the jar target/a-VERSION-with-dependencies.jar to someplace. i.e. c:\bin
 2. create a file called "a.bat" on your path, i.e. c:\bin
 ```
@@ -177,10 +196,37 @@ java -jar c:\bin\a-1.3.2-jar-with-dependencies.jar %*
 3. Run from any place.
 
 
-#Use SSL
+## Use SSL
 Given you have a truststore and a keystore in JKS format, you can edit your a start script, or run it manually like this.
 Note that the -Djavax parameters has to come before -jar. 
 ```
 java -Djavax.net.ssl.keyStore=/Users/petter/client.jks -Djavax.net.ssl.keyStorePassword=password -Djavax.net.ssl.trustStore=/Users/petter/truststore.jks -Djavax.net.ssl.trustStorePassword=password -jar a-1.3.2-jar-with-dependencies.jar -b ssl://example.org:61618 MY.QUEUE 
-
 ```
+
+## Apply transformations during write-dump or restore-dump
+
+Using the -S command, a JavaScript transformation can be supplied that will run on each message. The purpose of this feature is to deal with poision-messages that has to be fixed "on-the-fly", removing sensitive data from messages before exporting them from production to a development environment, or to generally help during migrations.
+
+The script is used to modifiy the `msg` variable that will be written or restored.
+
+Example: `msg.JMSPriority = 2;` to change JMS priority of each message.
+
+The `msg.body` parameter depends on `msg.type`. If type is TextMessage, then msg.body is a simple String that can altered in any way. However, if type is BytesMessage, `msg.body` will be a Base64 encoded byte-array which is not convenient in JavaScript. ObjectMessage bodies are also Base64 encoded, but can't be decoded/encoded. Other message types are not yet implmenteted for dump/restore and transformations.
+
+To deal with a BytesMessage use
+
+`msg.encode('Some string', 'UTF-8');`
+
+and 
+
+`var contentAsString = msg.decode('UTF-8');`
+
+This can be powerful, for instance, convert TextMessages to BytesMessages:
+
+    // TextMessage to BytesMessage encoded as UTF-8
+    msg.type = 'BytesMessage';
+    msg.encode(msg.body, 'UTF-8');
+
+or set some message property that is missing
+
+    msg.stringProperties.set('foo', 'bar');

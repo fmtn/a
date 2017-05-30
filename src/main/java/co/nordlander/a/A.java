@@ -611,7 +611,7 @@ public class A {
 		MessageProducer mp = tsess != null ? tsess.createProducer(destination) : sess.createProducer(destination);
 		
 		for (Message message : messages) {
-			mp.send(message);
+			mp.send(message, message.getJMSDeliveryMode(), message.getJMSPriority(), message.getJMSExpiration() );
 		}
 		
 		if (tsess != null){

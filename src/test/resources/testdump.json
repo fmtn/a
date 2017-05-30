@@ -1,7 +1,7 @@
 [
     {
         "JMSCorrelationID": "MyCorrelationId",
-        "JMSDeliveryMode": 2,
+        "JMSDeliveryMode": 1,
         "JMSExpiration": 0,
         "JMSMessageID": "ID:fbdaf2c4-43d3-11e7-8789-2e3c47bd90a7",
         "JMSPriority": 4,
@@ -22,14 +22,13 @@
         "objectProperties": {},
         "shortProperties": {},
         "stringProperties": {
-            "JMSXDeliveryCount": "1",
             "myStringProperty": "String Value - å"
         },
         "type": "TextMessage"
     },
     {
         "JMSCorrelationID": null,
-        "JMSDeliveryMode": 2,
+        "JMSDeliveryMode": 1,
         "JMSExpiration": 0,
         "JMSMessageID": "ID:fbdd63c5-43d3-11e7-8789-2e3c47bd90a7",
         "JMSPriority": 4,
@@ -45,9 +44,7 @@
         "longProperties": {},
         "objectProperties": {},
         "shortProperties": {},
-        "stringProperties": {
-            "JMSXDeliveryCount": "1"
-        },
+        "stringProperties": {},
         "type": "BytesMessage"
     }
 ]

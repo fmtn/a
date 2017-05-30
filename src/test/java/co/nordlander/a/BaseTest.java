@@ -539,7 +539,7 @@ public abstract class BaseTest {
         // JMS Timestamp also recreated - do not test!
         
         assertEquals("MyCorrelationId", msg1.getJMSCorrelationID());
-        assertEquals(2, msg1.getJMSDeliveryMode());
+        assertEquals(1, msg1.getJMSDeliveryMode());
         assertEquals(4, msg1.getJMSPriority());
         assertEquals("myJmsType", msg1.getJMSType());
         assertEquals(Math.PI, msg1.getDoubleProperty("myDoubleProperty"), 0.000000000000001);
