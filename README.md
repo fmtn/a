@@ -14,7 +14,8 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
        [-g] [-H <property=value>] [-I <property=value>] [-i <arg>] [-J
        <arg>] [-j] [-L <property=value>] [-l] [-M <arg>] [-n] [-O] [-o
        <arg>] [-P <arg>] [-p <arg>] [-R <arg>] [-r <arg>] [-S <arg>] [-s
-       <arg>] [-T] [-t <arg>] [-U <arg>] [-w <arg>] [-X <arg>] [-x <arg>]
+       <arg>] [-T] [-t <arg>] [-U <arg>] [-v] [-w <arg>] [-X <arg>] [-x
+       <arg>]
  -A,--amqp                     Set protocol to AMQP. Defaults to OpenWire
  -a,--artemis-core             Set protocol to ActiveMQ Artemis Core.
                                Defaults to OpenWire
@@ -74,11 +75,12 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
  -t,--type <arg>               Message type to put, [bytes, text, map] -
                                defaults to text
  -U,--user <arg>               Username to connect to broker
+ -v,--version                  Show version of A
  -w,--wait <arg>               Time to wait on get operation. Default 50.
                                0 equals infinity
  -X,--restore-dump <arg>       Restore a dump of messages in a
                                file,created with -x. Can be used with
-                               transformation option, count and selectors.
+                               transformation option.
  -x,--write-dump <arg>         Write a dump of messages to a file. Will
                                preserve metadata and type. Can  be used
                                with transformation option
