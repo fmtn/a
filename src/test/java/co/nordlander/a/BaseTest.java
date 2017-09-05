@@ -63,7 +63,6 @@ import org.junit.rules.TemporaryFolder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.io.Files;
 
 /**
  * A base class with all the test cases.
@@ -154,15 +153,17 @@ public abstract class BaseTest {
     }
 
     @Test
-    public void testPutWithPriority() throws Exception{
+    public void testPutWithPriorityAndType() throws Exception{
         final int priority = 6;
-        String cmdLine = getConnectCommand() + "-" + CMD_PRIORITY +" " + priority + " -" + CMD_PUT + "\"test\""
-                + " TEST.QUEUE";
+        final String type = "MyType";
+        String cmdLine = getConnectCommand() + "-" + CMD_PRIORITY + " " + priority + " -" + CMD_JMS_TYPE + " " + type 
+                +  " -" + CMD_PUT + "\"test\"" + " TEST.QUEUE";
         a.run(cmdLine.split(" "));
         MessageConsumer mc = session.createConsumer(testQueue);
         TextMessage msg = (TextMessage)mc.receive(TEST_TIMEOUT);
         assertEquals("test",msg.getText());
-        assertEquals(priority,msg.getJMSPriority());
+        assertEquals(priority, msg.getJMSPriority());
+        assertEquals(type, msg.getJMSType());
     }
 
     @Test
@@ -171,7 +172,7 @@ public abstract class BaseTest {
         Future<TextMessage> resultMessage = executor.submit(new Callable<TextMessage>(){
             public TextMessage call() throws Exception {
                 MessageConsumer mc = session.createConsumer(testTopic);
-                return (TextMessage)mc.receive(TEST_TIMEOUT);
+                return (TextMessage)mc.receive(TEST_TIMEOUT + 2000L);
             }
         });
         a.run(cmdLine.split(" "));

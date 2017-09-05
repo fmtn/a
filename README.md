@@ -64,8 +64,7 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
                                is assumed.
  -r,--reply-to <arg>           Set reply to destination, i.e. queue:reply
  -S,--transform-script <arg>   JavaScript code (or @path/to/file.js). Used
-                               to transform messages with the dump
-                               options. Access message in JavaScript by
+                               to transform messages. Access message in JavaScript by
                                msg.JMSType = 'foobar';
  -s,--selector <arg>           Browse or get with selector
  -T,--no-transaction-support   Set to disable transactions if not
@@ -84,6 +83,7 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
  -x,--write-dump <arg>         Write a dump of messages to a file. Will
                                preserve metadata and type. Can  be used
                                with transformation option
+ -y,--jms-type <arg>           Sets JMSType header
 ```
 
 Example 1. Put message with payload "foobar" to queue q on local broker:
@@ -205,9 +205,9 @@ Note that the -Djavax parameters has to come before -jar.
 java -Djavax.net.ssl.keyStore=/Users/petter/client.jks -Djavax.net.ssl.keyStorePassword=password -Djavax.net.ssl.trustStore=/Users/petter/truststore.jks -Djavax.net.ssl.trustStorePassword=password -jar a-1.3.2-jar-with-dependencies.jar -b ssl://example.org:61618 MY.QUEUE 
 ```
 
-## Apply transformations during write-dump or restore-dump
+## Apply transformations
 
-Using the -S command, a JavaScript transformation can be supplied that will run on each message. The purpose of this feature is to deal with poision-messages that has to be fixed "on-the-fly", removing sensitive data from messages before exporting them from production to a development environment, or to generally help during migrations.
+Using the -S command, a JavaScript transformation can be supplied that will run on each message. The purpose of this feature is to deal with poison-messages that has to be fixed "on-the-fly", removing sensitive data from messages before exporting them from production to a development environment, or to generally help during migrations.
 
 The script is used to modifiy the `msg` variable that will be written or restored.
 

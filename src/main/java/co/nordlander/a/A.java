@@ -13,7 +13,6 @@ import java.nio.file.Paths;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
@@ -42,6 +41,7 @@ import javax.naming.InitialContext;
 import javax.script.ScriptException;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.activemq.MessageTransformer;
 import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
 import org.apache.activemq.command.ActiveMQMessage;
 import org.apache.activemq.command.ActiveMQQueue;
@@ -85,6 +85,7 @@ public class A {
 	protected Connection conn;
 	protected Session sess, tsess;
 	protected CommandLine cmdLine;
+	MessageDumpTransformer transformer = new MessageDumpTransformer();
 
 	// Customizable output
 	protected AOutput output = new AOutput() {
@@ -131,6 +132,7 @@ public class A {
 	public static final String CMD_WAIT = "w";
 	public static final String CMD_RESTORE_DUMP = "X";
 	public static final String CMD_WRITE_DUMP = "x";
+	public static final String CMD_JMS_TYPE = "y";
 	
 	// Various constants
 	public static final long SLEEP_TIME_BETWEEN_FILE_CHECK = 1000L;
@@ -275,7 +277,7 @@ public class A {
 				" to ", cmdLine.getArgs()[0]);
 	}
 
-	protected void executeCopy(CommandLine cmdLine) throws JMSException {
+	protected void executeCopy(CommandLine cmdLine) throws JMSException, ScriptException, IOException {
 		Queue tq = sess.createQueue(cmdLine.getArgs()[0]);
 		Queue q = sess.createQueue(cmdLine.getOptionValue(CMD_COPY_QUEUE)); // Source
 		QueueBrowser qb = null;
@@ -301,7 +303,12 @@ public class A {
 						String haystack = ((TextMessage) msg).getText();
 						String needle = cmdLine.getOptionValue(CMD_FIND);
 						if (haystack != null && haystack.contains(needle)) {
-							mp.send(msg);
+							if( cmdLine.hasOption(CMD_TRANSFORM_SCRIPT) ) {
+								mp.send(transformMessage(msg,cmdLine.getOptionValue(CMD_TRANSFORM_SCRIPT)));
+							} else {
+								mp.send(msg);
+							}
+							
 							++j;
 						}
 					}
@@ -318,7 +325,7 @@ public class A {
 
 	protected void connect(String url, String user, String password,
 			Protocol protocol, String jndi, boolean noTransactionSupport) throws Exception {
-		if (jndi == null || jndi.equals("")) {
+		if (StringUtils.isBlank(jndi)) {
 			switch (protocol) {
 			case AMQP:
 				cf = createAMQPCF(url);
@@ -377,14 +384,14 @@ public class A {
 
 	protected ConnectionFactory createAMQPCF(String uri) {
 		try {
-			return ConnectionFactoryImpl.createFromURL(uri);
-		} catch (MalformedURLException e) {
-			throw new IllegalArgumentException(e.getMessage());
-		}
+            return ConnectionFactoryImpl.createFromURL(uri);
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException(e.getMessage());
+        }
 	}
 
 	protected void executeGet(final CommandLine cmdLine) throws JMSException,
-			IOException {
+			IOException, ScriptException {
 		Destination dest = createDestination(cmdLine.getArgs()[0]);
 		MessageConsumer mq = null;
 		if (cmdLine.hasOption(CMD_SELECTOR)) { // Selectors
@@ -404,13 +411,17 @@ public class A {
 				output("No message received");
 				break;
 			} else {
+				if( cmdLine.hasOption(CMD_TRANSFORM_SCRIPT) ) {
+					msg = transformMessage(msg,cmdLine.getOptionValue(CMD_TRANSFORM_SCRIPT));
+				}
+				
 				outputMessage(msg, cmdLine.hasOption(CMD_JMS_HEADERS));
 				++i;
 			}
 		}
 	}
 
-	protected void executePut(final CommandLine cmdLine) throws IOException, JMSException{
+	protected void executePut(final CommandLine cmdLine) throws IOException, JMSException, ScriptException{
 		String data = cmdLine.getOptionValue(CMD_PUT);
 		putData(data, cmdLine);
 		if( data.startsWith("@")){
@@ -421,7 +432,7 @@ public class A {
 	}
 	
 	protected void executeReadFolder(final CommandLine cmdLine) throws IOException,
-	JMSException {
+	JMSException, ScriptException {
 		
 		final long fileAgeMS = 1000;
 		String pathFilter = cmdLine.getOptionValue(CMD_READ_FOLDER);
@@ -500,7 +511,6 @@ public class A {
 		MessageDumpReader dumpReader = new MessageDumpReader(sess);
 		List<MessageDump> dumpMessages = dumpReader.toDumpMessages(dumpJson);
 		if( cmdLine.hasOption(CMD_TRANSFORM_SCRIPT)) {
-			MessageDumpTransformer transformer = new MessageDumpTransformer();
 			transformer.transformMessages(dumpMessages, cmdLine.getOptionValue(CMD_TRANSFORM_SCRIPT));
 		}
 		List<Message> messages = dumpReader.toMessages(dumpMessages);
@@ -529,7 +539,6 @@ public class A {
 			MessageDumpWriter mdw = new MessageDumpWriter();
 			List<MessageDump> dumpMessages = mdw.toDumpMessages(msgs);
 			if( cmdLine.hasOption(CMD_TRANSFORM_SCRIPT)) {
-				MessageDumpTransformer transformer = new MessageDumpTransformer();
 				transformer.transformMessages(dumpMessages, cmdLine.getOptionValue(CMD_TRANSFORM_SCRIPT));
 			}
 			
@@ -575,7 +584,7 @@ public class A {
 	}
 	
 	protected void putData(final String data, final CommandLine cmdLine) throws IOException,
-			JMSException {
+			JMSException, ScriptException {
 		// Check if we have properties to put
 		Properties props = cmdLine.getOptionProperties(CMD_SET_HEADER);
 		Properties intProps = cmdLine.getOptionProperties(CMD_SET_INT_HEADER);
@@ -631,16 +640,31 @@ public class A {
 			}
 		}
 
+		if (cmdLine.hasOption(CMD_JMS_TYPE)) {
+			outMsg.setJMSType(cmdLine.getOptionValue(CMD_JMS_TYPE));
+		}
+		
+		boolean useScript = cmdLine.hasOption(CMD_TRANSFORM_SCRIPT);
+		final String script = cmdLine.getOptionValue(CMD_TRANSFORM_SCRIPT);
+		
 		// send multiple messages?
 		if (cmdLine.hasOption("c")) {
 			int count = Integer.parseInt(cmdLine.getOptionValue("c"));
 			for (int i = 0; i < count; i++) {
-				mp.send(outMsg);
+				final Message finalMsg = useScript ? transformMessage(outMsg, script) : outMsg;
+				mp.send(finalMsg);
 			}
 			output("", count, " messages sent");
 		} else {
-			mp.send(outMsg);
+			final Message finalMsg = useScript ? transformMessage(outMsg, script) : outMsg;
+			mp.send(finalMsg);
 		}
+	}
+	
+	protected Message transformMessage(final Message msg, final String script) throws JMSException, ScriptException, IOException{
+		MessageDumpWriter mdw = new MessageDumpWriter();
+		MessageDumpReader mdr = new MessageDumpReader(sess);
+		return mdr.toJmsMessage(transformer.transformMessage(mdw.toDumpMessage(msg), script));
 	}
 
 	protected Message createMessageFromInput(final String data, String type, String encoding)
@@ -742,6 +766,7 @@ public class A {
 		}
 	}
 
+	// ActiveMQ 5.x specific code. Not always working like expected.
 	protected void executeListQueues(final CommandLine cmdLine)
 			throws JMSException {
 		if (conn instanceof org.apache.activemq.ActiveMQConnection) {
@@ -1117,6 +1142,9 @@ public class A {
 					+"Used to transform messages with the dump options. Access message in JavaScript by msg.JMSType = 'foobar';");
 
 		opts.addOption(CMD_VERSION, "version", false, "Show version of A");
+
+		opts.addOption(CMD_JMS_TYPE, "jms-type", true, "Sets JMSType header" );
+
 		
 		return opts;
 	}

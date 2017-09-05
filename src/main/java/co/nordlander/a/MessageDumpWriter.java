@@ -63,7 +63,7 @@ public class MessageDumpWriter {
 		return dump;
 	}
 	
-	protected MessageDump toDumpMessage(Message msg) throws JMSException{
+	public MessageDump toDumpMessage(Message msg) throws JMSException{
 		
 		MessageDump dump = new MessageDump();
 		dump.JMSCorrelationID = msg.getJMSCorrelationID();
