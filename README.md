@@ -15,7 +15,7 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
        <arg>] [-j] [-L <property=value>] [-l] [-M <arg>] [-n] [-O] [-o
        <arg>] [-P <arg>] [-p <arg>] [-R <arg>] [-r <arg>] [-S <arg>] [-s
        <arg>] [-T] [-t <arg>] [-U <arg>] [-v] [-w <arg>] [-X <arg>] [-x
-       <arg>]
+       <arg>] [-y <arg>]
  -A,--amqp                     Set protocol to AMQP. Defaults to OpenWire
  -a,--artemis-core             Set protocol to ActiveMQ Artemis Core.
                                Defaults to OpenWire
