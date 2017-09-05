@@ -1,0 +1,2 @@
+#!/bin/sh
+java -jar ~/bin/${project.build.finalName}-jar-with-dependencies.jar "$@"% 

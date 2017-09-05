@@ -4,7 +4,7 @@ a
 A is a JMS testing/admin utility specialized for ActiveMQ.
 
 Used to send, browse and put messages on queues.
-
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Build Status](https://travis-ci.org/fmtn/a.svg?branch=master)](https://travis-ci.org/fmtn/a)
 
 
@@ -183,7 +183,7 @@ This way, you can even connect to non ActiveMQ/AMQP brokers. You simply need to 
 2. create a file called "a" on your path (~/bin/a or what have you)
 ```  
 #!/bin/sh
-java -jar ~/bin/a-1.4.0-jar-with-dependencies.jar "$@"
+java -jar ~/bin/a-1.4.1-jar-with-dependencies.jar "$@"
 ```
 3. chmod +x a
 4. Run a from any place.
@@ -193,7 +193,7 @@ java -jar ~/bin/a-1.4.0-jar-with-dependencies.jar "$@"
 2. create a file called "a.bat" on your path, i.e. c:\bin
 ```
 @echo off
-java -jar c:\bin\a-1.4.0-jar-with-dependencies.jar %*
+java -jar c:\bin\a-1.4.1-jar-with-dependencies.jar %*
 ```
 3. Run from any place.
 

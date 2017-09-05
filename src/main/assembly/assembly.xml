@@ -1,0 +1,33 @@
+<assembly>
+    <id>dist</id>
+    <!-- Specifies that our binary distribution is a zip package -->
+    <formats>
+        <format>zip</format>
+        <format>tar.gz</format>
+    </formats>
+
+    <baseDirectory>/</baseDirectory>
+
+    <files>
+        <file>
+            <source>target/${project.artifactId}-${project.version}-jar-with-dependencies.jar</source>
+            <outputDirectory>/</outputDirectory>
+        </file>
+        <file>
+            <source>README.md</source>
+            <outputDirectory>/</outputDirectory>
+        </file>
+        <file>
+            <source>LICENSE</source>
+            <outputDirectory>/</outputDirectory>
+        </file>
+        <file>
+            <source>target/classes/a</source>
+            <outputDirectory>/</outputDirectory>
+        </file>
+        <file>
+            <source>target/classes/a.bat</source>
+            <outputDirectory>/</outputDirectory>
+        </file>
+    </files>
+</assembly>
