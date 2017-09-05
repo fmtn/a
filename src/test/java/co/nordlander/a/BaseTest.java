@@ -172,7 +172,7 @@ public abstract class BaseTest {
         Future<TextMessage> resultMessage = executor.submit(new Callable<TextMessage>(){
             public TextMessage call() throws Exception {
                 MessageConsumer mc = session.createConsumer(testTopic);
-                return (TextMessage)mc.receive(TEST_TIMEOUT + 2000L);
+                return (TextMessage)mc.receive(TEST_TIMEOUT + 6000L);
             }
         });
         a.run(cmdLine.split(" "));
