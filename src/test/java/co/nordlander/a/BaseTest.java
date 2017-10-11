@@ -179,6 +179,18 @@ public abstract class BaseTest {
         assertEquals("test",resultMessage.get().getText());
     }
 
+    // https://github.com/fmtn/a/issues/17
+    @Test
+    public void testPutQueueWithSlash() throws Exception {
+        final String queueWithSlash = "MY/QUEUE";
+        final String cmdLine = getConnectCommand() + "-" + CMD_PUT + " \"test\" " + queueWithSlash;
+        System.out.println("Testing cmd: " + cmdLine);
+        a.run(cmdLine.split(" "));
+        MessageConsumer mc = session.createConsumer(session.createQueue(queueWithSlash));
+        TextMessage msg = (TextMessage)mc.receive(TEST_TIMEOUT);
+        assertEquals("test", msg.getText());
+    }
+
     @Test
     public void testGetQueue() throws Exception{
         MessageProducer mp = session.createProducer(testQueue);

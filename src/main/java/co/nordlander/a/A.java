@@ -721,7 +721,7 @@ public class A {
 	protected Destination createDestination(final String name)
 			throws JMSException {
 		// support queue:// as well.
-		final String correctedName = name.replace("/", "");
+		final String correctedName = name.replace("queue://", "queue:").replace("topic://", "topic:");
 		if (correctedName.toLowerCase().startsWith("queue:")) {
 			return sess.createQueue(correctedName);
 		} else if (correctedName.toLowerCase().startsWith("topic:")) {
