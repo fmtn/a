@@ -1,2 +1,2 @@
 @echo off
-java -jar c:\bin\${project.build.finalName}-jar-with-dependencies.jar %*
+java -jar %~dp0${project.build.finalName}-jar-with-dependencies.jar %*

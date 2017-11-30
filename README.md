@@ -178,24 +178,16 @@ This way, you can even connect to non ActiveMQ/AMQP brokers. You simply need to 
 
     $mvn clean install
 
-## Make the jar runnable from *nix-shell as in examples:
-1. copy the jar target/a-VERSION-with-dependencies.jar to someplace. i.e. ~/bin/
-2. create a file called "a" on your path (~/bin/a or what have you)
-```  
-#!/bin/sh
-java -jar ~/bin/a-1.4.1-jar-with-dependencies.jar "$@"
-```
+## Install in Unix environment
+1. Unzip distribution somewhere
+2. Make sure the extracted folder is on path.
 3. chmod +x a
 4. Run a from any place.
 
-## Make the jar runnable in windows console
-1. copy the jar target/a-VERSION-with-dependencies.jar to someplace. i.e. c:\bin
-2. create a file called "a.bat" on your path, i.e. c:\bin
-```
-@echo off
-java -jar c:\bin\a-1.4.1-jar-with-dependencies.jar %*
-```
-3. Run from any place.
+## Install in Windows environment
+1. Unzip distribution somewhere
+2. Make sure the extracted folder is on path.
+2. Run a.bat from any place.
 
 
 ## Use SSL
