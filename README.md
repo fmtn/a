@@ -10,7 +10,7 @@ Used to send, browse and put messages on queues.
 
 ```
 usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
-       [-C <arg>] [-c <arg>] [-D <arg>] [-e <arg>] [-F <arg>] [-f <arg>]
+       [-C <arg>] [-c <arg>] [-E <arg>] [-e <arg>] [-F <arg>] [-f <arg>]
        [-g] [-H <property=value>] [-I <property=value>] [-i <arg>] [-J
        <arg>] [-j] [-L <property=value>] [-l] [-M <arg>] [-n] [-O] [-o
        <arg>] [-P <arg>] [-p <arg>] [-R <arg>] [-r <arg>] [-S <arg>] [-s
@@ -27,7 +27,7 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
  -c,--count <arg>              A number of messages to browse,get,move or
                                put (put will put the same message <count>
                                times). 0 means all messages.
- -D,--correlation-id <arg>     Set CorrelationID
+ -E,--correlation-id <arg>     Set CorrelationID
  -e,--encoding <arg>           Encoding of input file data. Default UTF-8
  -F,--jndi-cf-name <arg>       Specify JNDI name for ConnectionFactory.
                                Defaults to connectionFactory. Use with -J

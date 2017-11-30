@@ -103,7 +103,7 @@ public class A {
 	public static final String CMD_BROKER = "b";
 	public static final String CMD_COPY_QUEUE = "C";
 	public static final String CMD_COUNT = "c";
-	public static final String CMD_CORRELATION_ID = "D";
+	public static final String CMD_CORRELATION_ID = "E";
 	public static final String CMD_ENCODING = "e";
 	public static final String CMD_JNDI_CF = "F";
 	public static final String CMD_FIND = "f";
