@@ -1010,8 +1010,12 @@ public class A {
 		Enumeration<String> en = msg.getPropertyNames();
 		while (en.hasMoreElements()) {
 			String name = en.nextElement();
-			Object property = msg.getObjectProperty(name);
-			output("  ", name, ": ", null != property ? property.toString() : "[null]");
+			try {
+				Object property = msg.getObjectProperty(name);
+				output("  ", name, ": ", null != property ? property.toString() : "[null]");
+			} catch ( Exception e) {
+				output("  ", name, ": Error loading property (" + e.getMessage() + ")");
+			}
 		}
 	}
 
