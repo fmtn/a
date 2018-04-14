@@ -127,12 +127,15 @@ Example 10. Put a map message on a queue using json format.
     $a -p "{\"a\":\"a message tool\"}" -t map q
 
 Example 11. Backup/dump messages on a queue with metadata
+    
     $a -x dump.json q
 
 Example 12. Restore dump of messages with metadata to a queue
+    
     $a -X dump.json q2
 
 Example 12. Restore and transform messagse
+    
     $a -X dump.json -S @transform.js q2
 
 ## Use AMQP 1.0
@@ -223,4 +226,4 @@ This can be powerful, for instance, convert TextMessages to BytesMessages:
 
 or set some message property that is missing
 
-    msg.stringProperties.set('foo', 'bar');
+    msg.stringProperties.put('foo', 'bar');
