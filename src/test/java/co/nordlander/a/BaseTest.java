@@ -270,6 +270,25 @@ public abstract class BaseTest {
     }
 
     /**
+     * Test that transforming messages with copy works.
+     * @throws Exception
+     */
+    @Test
+    public void testCopyQueueWithTransformer() throws Exception {
+        final String script = "\"msg.stringProperties.put('changeme','new');\"";
+        final String cmdLine = getConnectCommand() + "-" + CMD_COPY_QUEUE + " SOURCE.QUEUE -" + CMD_TRANSFORM_SCRIPT + " " + script + " TARGET.QUEUE";
+
+        MessageProducer mp = session.createProducer(sourceQueue);
+        mp.send(testMessage);
+        a.run(cmdLine.split(" "));
+        // Verify messages are moved to target queue
+        MessageConsumer mc = session.createConsumer(targetQueue);
+        TextMessage msg = (TextMessage)mc.receive(TEST_TIMEOUT);
+        assertNotNull(msg);
+        assertEquals("new", msg.getStringProperty("changeme"));
+    }
+
+    /**
      * Test that all messages are moved from one queue to the other.
      * @throws Exception
      */
@@ -293,6 +312,26 @@ public abstract class BaseTest {
         assertNotNull(msg);
         msg = (TextMessage)mc.receive(TEST_TIMEOUT);
         assertNull(msg);
+
+    }
+
+    /**
+     * Test that all messages are moved from one queue to the other.
+     * @throws Exception
+     */
+    @Test
+    public void testMoveQueueWithTransformer() throws Exception{
+        final String script = "\"msg.stringProperties.put('changeme','new');\"";
+        final String cmdLine = getConnectCommand() + "-" + CMD_MOVE_QUEUE + " SOURCE.QUEUE -" + CMD_TRANSFORM_SCRIPT + " " + script + " TARGET.QUEUE";
+        MessageProducer mp = session.createProducer(sourceQueue);
+        mp.send(testMessage);
+        a.run(cmdLine.split(" "));
+        // Verify messages are moved to target queue with changed property
+        MessageConsumer mc = session.createConsumer(targetQueue);
+        TextMessage msg = (TextMessage)mc.receive(TEST_TIMEOUT);
+        assertNotNull(msg);
+        assertEquals("new", msg.getStringProperty("changeme"));
+
     }
     
     /**

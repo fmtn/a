@@ -242,7 +242,7 @@ public class A {
 	}
 
 	protected void executeMove(CommandLine cmdLine) throws JMSException,
-			UnsupportedEncodingException, IOException {
+			UnsupportedEncodingException, ScriptException, IOException {
 		
 		// Should be able to support some kind of Move operation even though the session is not transacted.
 		boolean hasTransactionalSession = tsess != null;
@@ -266,7 +266,7 @@ public class A {
 			if (msg == null) {
 				break;
 			} else {
-				mp.send(msg);
+				sendWithOptionalTransformer(cmdLine, msg, mp);
 				if( hasTransactionalSession ){
 					moveSession.commit();
 				}
@@ -303,17 +303,12 @@ public class A {
 						String haystack = ((TextMessage) msg).getText();
 						String needle = cmdLine.getOptionValue(CMD_FIND);
 						if (haystack != null && haystack.contains(needle)) {
-							if( cmdLine.hasOption(CMD_TRANSFORM_SCRIPT) ) {
-								mp.send(transformMessage(msg,cmdLine.getOptionValue(CMD_TRANSFORM_SCRIPT)));
-							} else {
-								mp.send(msg);
-							}
-							
+							sendWithOptionalTransformer(cmdLine, msg, mp);
 							++j;
 						}
 					}
 				} else {
-					mp.send(msg);
+					sendWithOptionalTransformer(cmdLine, msg, mp);
 					++j;
 				}
 				++i;
@@ -321,6 +316,15 @@ public class A {
 		}
 		output(j, " msgs copied from ", cmdLine.getOptionValue(CMD_COPY_QUEUE),
 				" to ", cmdLine.getArgs()[0]);
+	}
+
+	protected void sendWithOptionalTransformer(CommandLine cmdLine, Message msg, MessageProducer mp) throws JMSException, ScriptException, IOException {
+		if( cmdLine.hasOption(CMD_TRANSFORM_SCRIPT) ) {
+			mp.send(transformMessage(msg, cmdLine.getOptionValue(CMD_TRANSFORM_SCRIPT)));
+		} else {
+			mp.send(msg);
+		}
+
 	}
 
 	protected void connect(String url, String user, String password,
