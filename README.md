@@ -179,7 +179,7 @@ This way, you can even connect to non ActiveMQ/AMQP brokers. You simply need to 
 
 ## Build
 
-If you want to build the sources.
+If you want to build the project.
 
     $mvn clean install
     
