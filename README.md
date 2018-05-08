@@ -179,7 +179,14 @@ This way, you can even connect to non ActiveMQ/AMQP brokers. You simply need to 
 
 ## Build
 
+If you want to build the sources.
+
     $mvn clean install
+    
+## Download
+
+Download the distribution from the latest release. 
+https://github.com/fmtn/a/releases/latest
 
 ## Install in Unix environment
 1. Unzip distribution somewhere
