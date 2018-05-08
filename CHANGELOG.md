@@ -1,6 +1,9 @@
 # Changelog
 
-## [Unreleased]
+## [1.4.4]
+
+### Added
+- #23 Support for legacy ActiveMQ versions
 
 ### Changed
 - #22 Script transformation of messages during copy and move
