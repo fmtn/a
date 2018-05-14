@@ -78,7 +78,6 @@ public class MessageDumpWriter {
 		@SuppressWarnings("rawtypes")
 		Enumeration propertyNames = msg.getPropertyNames();
 		while(propertyNames.hasMoreElements()){
-			System.out.println("looping!");
 			String property = (String) propertyNames.nextElement();
 			Object propertyValue = msg.getObjectProperty(property);
 			if( propertyValue instanceof String){
