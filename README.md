@@ -1,4 +1,4 @@
-a
+[[https://github.com/fmtn/a/blob/master/logo/Logo.png|alt=A]]
 =
 
 A is a JMS testing/admin utility specialized for ActiveMQ.
