@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/fmtn/a/master/logo/Logo.png" width="100">
+<img src="https://raw.githubusercontent.com/fmtn/a/master/logo/Logo.png" width="250">
 
 
 A is a JMS testing/admin utility specialized for ActiveMQ.
