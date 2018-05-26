@@ -48,7 +48,6 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.MessageTransformer;
 import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
 import org.apache.activemq.command.ActiveMQMessage;
 import org.apache.activemq.command.ActiveMQQueue;
@@ -141,6 +140,7 @@ public class A {
 	public static final String CMD_RESTORE_DUMP = "X";
 	public static final String CMD_WRITE_DUMP = "x";
 	public static final String CMD_JMS_TYPE = "y";
+	public static final String CMD_SET_BOOLEAN_HEADER = "B";
 	
 	// Various constants
 	public static final long SLEEP_TIME_BETWEEN_FILE_CHECK = 1000L;
@@ -626,6 +626,7 @@ public class A {
 		Properties props = cmdLine.getOptionProperties(CMD_SET_HEADER);
 		Properties intProps = cmdLine.getOptionProperties(CMD_SET_INT_HEADER);
 		Properties longProps = cmdLine.getOptionProperties(CMD_SET_LONG_HEADER);
+        Properties booleanProps = cmdLine.getOptionProperties(CMD_SET_BOOLEAN_HEADER);
 
 		String type = cmdLine.getOptionValue(CMD_TYPE, DEFAULT_TYPE);
 		String encoding = cmdLine.getOptionValue(CMD_ENCODING, Charset
@@ -656,6 +657,10 @@ public class A {
 
 		for (Entry<Object, Object> p : longProps.entrySet()) {
 			outMsg.setLongProperty((String) p.getKey(), Long.parseLong((String)p.getValue()));
+		}
+
+		for (Entry<Object, Object> p : booleanProps.entrySet()) {
+			outMsg.setBooleanProperty((String) p.getKey(), Boolean.parseBoolean((String)p.getValue()));
 		}
 
 		if (cmdLine.hasOption("r")) {
@@ -1161,6 +1166,17 @@ public class A {
 				.create(CMD_SET_LONG_HEADER);
 
 		opts.addOption(longProperty);
+
+		@SuppressWarnings("static-access")
+		Option booleanProperty = OptionBuilder
+				.withArgName("property=value")
+				.hasArgs(2)
+				.withValueSeparator()
+				.withDescription(
+						"use value for given Boolean property. Can be used several times.")
+				.create(CMD_SET_BOOLEAN_HEADER);
+
+		opts.addOption(booleanProperty);
 
 		@SuppressWarnings("static-access")
 		Option intProperty = OptionBuilder

@@ -19,6 +19,8 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
  -A,--amqp                     Set protocol to AMQP. Defaults to OpenWire
  -a,--artemis-core             Set protocol to ActiveMQ Artemis Core.
                                Defaults to OpenWire
+ -B <property=value>           use value for given Boolean property. Can
+                               be used several times.
  -b,--broker <arg>             URL to broker. defaults to:
                                tcp://localhost:61616
  -C,--copy-queue <arg>         Copy all messages from this to target.
