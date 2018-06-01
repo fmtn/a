@@ -1,6 +1,13 @@
 # Changelog
 
-## [unreleased]
+## [1.4.5] - 2018-06-01
+
+### Added
+- #26 Logo (by @nunojesus)
+- #27 Support for boolean propereties
+
+### Fixed
+- #24 removed annoying printout during message dumping 
 
 ## [1.4.4]
 

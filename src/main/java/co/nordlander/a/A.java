@@ -40,13 +40,6 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.script.ScriptException;
 
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.handler.codec.http.HttpObject;
-import io.netty.handler.codec.http.HttpServerCodec;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
 import org.apache.activemq.command.ActiveMQMessage;
@@ -114,9 +107,10 @@ public class A {
 	public static final String CMD_JNDI_CF = "F";
 	public static final String CMD_FIND = "f";
 	public static final String CMD_GET = "g";
+	public static final String CMD_SET_BOOLEAN_HEADER = "B";
 	public static final String CMD_SET_HEADER = "H";
-	public static final String CMD_HTTP_BRIDGE = "h";
 	public static final String CMD_SET_INT_HEADER = "I";
+	public static final String CMD_HTTP_BRIDGE = "h";
 	public static final String CMD_PRIORITY = "i";
 	public static final String CMD_JNDI = "J";
 	public static final String CMD_JMS_HEADERS = "j";
@@ -140,7 +134,6 @@ public class A {
 	public static final String CMD_RESTORE_DUMP = "X";
 	public static final String CMD_WRITE_DUMP = "x";
 	public static final String CMD_JMS_TYPE = "y";
-	public static final String CMD_SET_BOOLEAN_HEADER = "B";
 	
 	// Various constants
 	public static final long SLEEP_TIME_BETWEEN_FILE_CHECK = 1000L;
@@ -570,28 +563,6 @@ public class A {
 		output("Version " + version);
 		output("GitHub page: https://github.com/fmtn/a");
 	}
-/*
-	protected void executeStartHttpBridge(CommandLine cmdLine) throws Exception {
-
-		EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
-		ServerBootstrap bootstrap = new ServerBootstrap()
-				.group(eventLoopGroup)
-				.handler(new LoggingHandler(LogLevel.INFO))
-				.childHandler(new ChannelInitializer<Channel>() {
-					@Override
-					protected void initChannel(Channel ch) throws Exception {
-						ChannelPipeline pipeline = ch.pipeline();
-						pipeline.addLast(new HttpServerCodec());
-						pipeline.addLast(new SimpleChannelInboundHandler<HttpObject> () {
-
-							@Override
-							protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception {
-								
-							}
-						});
-					}
-				})
-	}*/
 
 	protected List<Message> consumeMessages(CommandLine cmdLine) throws JMSException {
 		Destination dest = createDestination(cmdLine.getArgs()[0]);
@@ -808,7 +779,7 @@ public class A {
 		}
 	}
 
-	// ActiveMQ 5.x specific code. Not always working like expected.
+	// ActiveMQ 5.x specific code. Not always works as expected.
 	protected void executeListQueues(final CommandLine cmdLine)
 			throws JMSException {
 		if (conn instanceof org.apache.activemq.ActiveMQConnection) {
@@ -1202,15 +1173,12 @@ public class A {
 
 		opts.addOption(CMD_JMS_TYPE, "jms-type", true, "Sets JMSType header" );
 
-		//opts.addOption(CMD_HTTP_BRIDGE, "http-bridge", true, "Start HTTP bridge to Broker. Takes http port as argument.");
-		
 		return opts;
 	}
 
-
 	protected String logoString() {
 		// ASCII Art from original by Nuno Jesus (https://github.com/nunojesus)
-		return "       @@@         ............(\n" +
+	    return "              @@@         ............(\n" +
 		"            @@@@@@@     *...........(  \n" +
 		"          @@@@@@@@@@@ *...........(    \n" +
 		"        @@@@@@@@@@@@(/*.........(      \n" +
