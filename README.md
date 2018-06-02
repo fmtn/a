@@ -9,13 +9,13 @@ Used to send, browse and put messages on queues.
 
 
 ```
-usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
-       [-C <arg>] [-c <arg>] [-E <arg>] [-e <arg>] [-F <arg>] [-f <arg>]
-       [-g] [-H <property=value>] [-I <property=value>] [-i <arg>] [-J
-       <arg>] [-j] [-L <property=value>] [-l] [-M <arg>] [-n] [-O] [-o
-       <arg>] [-P <arg>] [-p <arg>] [-R <arg>] [-r <arg>] [-S <arg>] [-s
-       <arg>] [-T] [-t <arg>] [-U <arg>] [-v] [-w <arg>] [-X <arg>] [-x
-       <arg>] [-y <arg>]
+usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-B
+       <property=value>] [-b <arg>] [-C <arg>] [-c <arg>] [-E <arg>] [-e
+       <arg>] [-F <arg>] [-f <arg>] [-g] [-H <property=value>] [-I
+       <property=value>] [-i <arg>] [-J <arg>] [-j] [-L <property=value>]
+       [-l] [-M <arg>] [-n] [-O] [-o <arg>] [-P <arg>] [-p <arg>] [-R
+       <arg>] [-r <arg>] [-S <arg>] [-s <arg>] [-T] [-t <arg>] [-U <arg>]
+       [-v] [-w <arg>] [-X <arg>] [-x <arg>] [-y <arg>]
  -A,--amqp                     Set protocol to AMQP. Defaults to OpenWire
  -a,--artemis-core             Set protocol to ActiveMQ Artemis Core.
                                Defaults to OpenWire
@@ -66,7 +66,8 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
                                is assumed.
  -r,--reply-to <arg>           Set reply to destination, i.e. queue:reply
  -S,--transform-script <arg>   JavaScript code (or @path/to/file.js). Used
-                               to transform messages. Access message in JavaScript by
+                               to transform messages with the dump
+                               options. Access message in JavaScript by
                                msg.JMSType = 'foobar';
  -s,--selector <arg>           Browse or get with selector
  -T,--no-transaction-support   Set to disable transactions if not
