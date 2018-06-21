@@ -20,6 +20,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -39,6 +41,7 @@ public class MessageDumpTransformer {
 	
 	protected ScriptEngineManager mgr = new ScriptEngineManager();
 	protected ScriptEngine engine = mgr.getEngineByName("JavaScript");
+	protected Map<String, Object> context = new TreeMap<>();
 	
 	public MessageDump transformMessage(MessageDump msg, String script) throws ScriptException, IOException{
 		if (StringUtils.isBlank(script)) {
@@ -69,8 +72,15 @@ public class MessageDumpTransformer {
 	   
 	protected MessageDump doTransformMessage(MessageDump msg, String script) throws ScriptException{
 		engine.put("msg", msg);
+		for (Map.Entry<String, Object> entry : context.entrySet() ) {
+			engine.put(entry.getKey(), entry.getValue());
+		}
 		engine.eval(script);
 		return msg;
+	}
+
+	protected Map<String, Object> getContext() {
+		return this.context;
 	}
 	   
 }

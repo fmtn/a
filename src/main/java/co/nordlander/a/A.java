@@ -67,6 +67,7 @@ import org.apache.commons.io.filefilter.AndFileFilter;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.qpid.amqp_1_0.jms.impl.ConnectionFactoryImpl;
+import org.apache.qpid.amqp_1_0.jms.impl.QueueImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,6 +100,7 @@ public class A {
 	// Commands
 	public static final String CMD_AMQP = "A";
 	public static final String CMD_ARTEMIS_CORE = "a";
+	public static final String CMD_SET_BOOLEAN_HEADER = "B";
 	public static final String CMD_BROKER = "b";
 	public static final String CMD_COPY_QUEUE = "C";
 	public static final String CMD_COUNT = "c";
@@ -107,10 +109,9 @@ public class A {
 	public static final String CMD_JNDI_CF = "F";
 	public static final String CMD_FIND = "f";
 	public static final String CMD_GET = "g";
-	public static final String CMD_SET_BOOLEAN_HEADER = "B";
 	public static final String CMD_SET_HEADER = "H";
-	public static final String CMD_SET_INT_HEADER = "I";
 	public static final String CMD_HTTP_BRIDGE = "h";
+	public static final String CMD_SET_INT_HEADER = "I";
 	public static final String CMD_PRIORITY = "i";
 	public static final String CMD_JNDI = "J";
 	public static final String CMD_JMS_HEADERS = "j";
@@ -131,6 +132,7 @@ public class A {
 	public static final String CMD_USER = "U";
 	public static final String CMD_VERSION = "v";
 	public static final String CMD_WAIT = "w";
+	public static final String CMD_BATCH_FILE = "W";
 	public static final String CMD_RESTORE_DUMP = "X";
 	public static final String CMD_WRITE_DUMP = "x";
 	public static final String CMD_JMS_TYPE = "y";
@@ -668,12 +670,33 @@ public class A {
 				mp.send(finalMsg);
 			}
 			output("", count, " messages sent");
+		} else if (cmdLine.hasOption(CMD_BATCH_FILE)) {
+			if (!useScript) {
+				output("Batch put must be used with script");
+			} else {
+				putBatchMessage(script, cmdLine.getOptionValue(CMD_BATCH_FILE), outMsg, mp);
+			}
 		} else {
 			final Message finalMsg = useScript ? transformMessage(outMsg, script) : outMsg;
 			mp.send(finalMsg);
 		}
 	}
-	
+
+	private void putBatchMessage(String script, String batchFile, Message outMsg, MessageProducer mp) {
+		try {
+			String batchLines = FileUtils.readFileToString(new File(batchFile), StandardCharsets.UTF_8);
+			final String[] lines = batchLines.split("\\r?\\n");
+			for (String line : lines) {
+				transformer.getContext().put("entry", line);
+				final Message finalMsg = transformMessage(outMsg, script);
+				mp.send(finalMsg);
+			}
+			output(lines.length + " messages sent");
+		} catch (Exception e) {
+			output("Error processing batch ", e.getMessage());
+		}
+	}
+
 	protected Message transformMessage(final Message msg, final String script) throws JMSException, ScriptException, IOException{
 		MessageDumpWriter mdw = new MessageDumpWriter();
 		MessageDumpReader mdr = new MessageDumpReader(sess);
@@ -1172,6 +1195,10 @@ public class A {
 		opts.addOption(CMD_VERSION, "version", false, "Show version of A");
 
 		opts.addOption(CMD_JMS_TYPE, "jms-type", true, "Sets JMSType header" );
+
+		opts.addOption(CMD_BATCH_FILE, "batch-file", true,
+				"Line separated batch file. Used with -p to produce one message per line in file. " +
+				"Used together with Script where each batch line can be accessed with variable 'entry' ");
 
 		return opts;
 	}

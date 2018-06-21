@@ -78,6 +78,10 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-B
                                defaults to text
  -U,--user <arg>               Username to connect to broker
  -v,--version                  Show version of A
+ -W,--batch-file <arg>         Line separated batch file. Used with -p to
+                                produce one message per line in file. Used
+                                together with Script where each batch line
+                                can be accessed with variable 'entry'
  -w,--wait <arg>               Time to wait on get operation. Default 50.
                                0 equals infinity
  -X,--restore-dump <arg>       Restore a dump of messages in a
@@ -237,3 +241,26 @@ This can be powerful, for instance, convert TextMessages to BytesMessages:
 or set some message property that is missing
 
     msg.stringProperties.put('foo', 'bar');
+
+
+## Batch files
+If you want to send a large amount of similar messages, where only a small value is alterd. You can use the batch command -W
+
+So, create a file where all those different values are, like id:s, names or whatnot. One entry per line.
+batch.txt:
+
+    id1
+    id2
+    id3
+
+Then use a script together with put, like this:
+
+    a -p "<xml>PLACEHOLDER</xml>" -S "msg.body=msg.body.replace('PLACEHOLDER',entry);" -W /path/to/batch.txt SOME.QUEUE
+
+will produce three messages on SOME.QUEUE.
+
+    <xml>id1</xml>
+    <xml>id2</xml>
+    <xml>id3</xml>
+
+Using -W is much faster than invoking A for each message, since it does not require a reconnection per message.

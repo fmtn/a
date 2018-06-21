@@ -633,6 +633,30 @@ public abstract class BaseTest {
         assertEquals("B - JMS util", resultMsg1.body);
         assertEquals("new", resultMsg1.stringProperties.get("changeme"));
     }
+
+    @Test
+    public void testBatch() throws Exception {
+        File folder = tempFolder.newFolder();
+        String batchContent = "a\nb\nc";
+        File batchFile = new File(folder, "batch.txt");
+        FileUtils.writeStringToFile(batchFile, batchContent, StandardCharsets.UTF_8);
+        String script = "\"msg.body=msg.body.replace('PLACEHOLDER',entry);\"";
+
+        String cmdLine = getConnectCommand() + "-" + CMD_PUT + " \"test-PLACEHOLDER\" -" + CMD_BATCH_FILE + " "
+                + batchFile.getAbsolutePath() +  " -" + CMD_TRANSFORM_SCRIPT + " " +  script + " TEST.QUEUE";
+        System.out.println("Testing cmd: " + cmdLine);
+        a.run(cmdLine.split(" "));
+
+        MessageConsumer mc = session.createConsumer(testQueue);
+        String[] entries = batchContent.split("\\n");
+        for (int i=0; i<entries.length; i++) {
+            TextMessage msg = (TextMessage) mc.receive(TEST_TIMEOUT);
+            assertNotNull(msg);
+            assertEquals("test-" + entries[i], msg.getText());
+        }
+
+    }
+
     
     /**
      * Needed to split command line arguments by space, but not quoted.
