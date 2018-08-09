@@ -414,7 +414,7 @@ public class A {
 		long wait = Long.parseLong(cmdLine.getOptionValue(CMD_WAIT,
 				DEFAULT_WAIT));
 		int i = 0;
-		while (i < count || i == 0) {
+		while (i < count || count == 0) {
 			Message msg = mq.receive(wait);
 			if (msg == null) {
 				output("No message received");
@@ -581,7 +581,7 @@ public class A {
 		
 		List<Message> msgs = new ArrayList<Message>();
 		int i = 0;
-		while (i < count || i == 0) {
+		while (i < count || count == 0) {
 			Message msg = mq.receive(wait);
 			if (msg == null) {
 				break;
