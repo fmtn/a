@@ -1,5 +1,13 @@
 # Changelog
 
+## [unreleased]
+### Fixed
+- #30 Default count 0 fixed
+
+## [1.4.7] - 2018-06-23
+## Added
+- Initial load features. Updated with new Rhino JS engine.
+
 ## [1.4.5] - 2018-06-01
 
 ### Added
