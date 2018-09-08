@@ -572,7 +572,7 @@ public abstract class BaseTest {
     }
     
     @Test
-    public void testRestoreDump() throws IOException, InterruptedException, JMSException {
+    public void testRestoreDump() throws Exception {
     	// place file where it can be reached by a - that is on file system, not classpath.
     	File dumpFile = tempFolder.newFile("testdump.json");
     	InputStream jsonStream = BaseTest.class.getClassLoader().getResourceAsStream("testdump.json");

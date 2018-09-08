@@ -155,10 +155,13 @@ public class A {
 	public static void main(String[] args) throws ParseException,
 			InterruptedException {
 		A a = new A();
-		a.run(args);
+		try { a.run(args); } catch (Exception e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 
-	public void run(String[] args) throws InterruptedException {
+	public void run(String[] args) throws Exception {
 		Options opts = createOptions();
 
 		if (args.length == 0) {
@@ -196,15 +199,6 @@ public class A {
 			long elapsedTime = stopTime - startTime;
 			output("Operation completed in ", Long.toString(elapsedTime),
 					"ms (excluding connect)");
-		} catch (ParseException pe) {
-			pe.printStackTrace();
-			return;
-		} catch (JMSException je) {
-			je.printStackTrace();
-			return;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return;
 		} finally {
 			try {
 				if (sess != null) {
