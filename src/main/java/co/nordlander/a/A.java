@@ -67,7 +67,6 @@ import org.apache.commons.io.filefilter.AndFileFilter;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.qpid.amqp_1_0.jms.impl.ConnectionFactoryImpl;
-import org.apache.qpid.amqp_1_0.jms.impl.QueueImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -545,16 +544,39 @@ public class A {
 		if( msgs.isEmpty()) {
 			output("No messages found - no file written");
 		} else {
-			MessageDumpWriter mdw = new MessageDumpWriter();
-			List<MessageDump> dumpMessages = mdw.toDumpMessages(msgs);
-			if( cmdLine.hasOption(CMD_TRANSFORM_SCRIPT)) {
-				transformer.transformMessages(dumpMessages, cmdLine.getOptionValue(CMD_TRANSFORM_SCRIPT));
+			try {
+				String filePath = cmdLine.getOptionValue(CMD_WRITE_DUMP);
+				output("Writing " + msgs.size() + " messages to dump file " + filePath);
+				MessageDumpWriter mdw = new MessageDumpWriter();
+				List<MessageDump> dumpMessages = mdw.toDumpMessages(msgs);
+				if( cmdLine.hasOption(CMD_TRANSFORM_SCRIPT)) {
+					transformer.transformMessages(dumpMessages, cmdLine.getOptionValue(CMD_TRANSFORM_SCRIPT));
+				}
+
+				final String jsonDump = mdw.toJson(dumpMessages);
+				FileUtils.writeStringToFile(new File(filePath), jsonDump, StandardCharsets.UTF_8);
+				output(msgs.size() + " messages written to " + filePath);
+				if (tsess != null){
+					tsess.commit();
+				}
+			} catch (Exception e){
+				output("Failed to write all messages to dump file. Reason: ", e.getMessage());
+				if (tsess != null){
+					output("Rolling back JMS transaction");
+					tsess.rollback();
+				}
 			}
-			
-			final String jsonDump = mdw.toJson(dumpMessages);
-			String filePath = cmdLine.getOptionValue(CMD_WRITE_DUMP);
-			FileUtils.writeStringToFile(new File(filePath), jsonDump, StandardCharsets.UTF_8);
-			output(msgs.size() + " messages written to " + filePath);
+		}
+		// check if either target count was reached or queue is empty
+		// output a warning if we failed to reach the count while there are still messages on the queue
+		int count = Integer.parseInt(cmdLine.getOptionValue(CMD_COUNT,
+				DEFAULT_COUNT_GET));
+		if (count > msgs.size()){
+			Queue queue = sess.createQueue(cmdLine.getArgs()[0]);
+			QueueBrowser browser = sess.createBrowser(queue);
+			if (browser.getEnumeration().hasMoreElements()){
+				output("There are messages remaining on the queue");
+			}
 		}
 	}
 
@@ -569,17 +591,18 @@ public class A {
 	protected List<Message> consumeMessages(CommandLine cmdLine) throws JMSException {
 		Destination dest = createDestination(cmdLine.getArgs()[0]);
 		MessageConsumer mq = null;
+		final Session session = tsess != null ? tsess : sess;
 		if (cmdLine.hasOption(CMD_SELECTOR)) { // Selectors
-			mq = sess.createConsumer(dest, cmdLine.getOptionValue(CMD_SELECTOR));
+			mq = session.createConsumer(dest, cmdLine.getOptionValue(CMD_SELECTOR));
 		} else {
-			mq = sess.createConsumer(dest);
+			mq = session.createConsumer(dest);
 		}
 		int count = Integer.parseInt(cmdLine.getOptionValue(CMD_COUNT,
 				DEFAULT_COUNT_GET));
 		long wait = Long.parseLong(cmdLine.getOptionValue(CMD_WAIT,
 				DEFAULT_WAIT));
-		
-		List<Message> msgs = new ArrayList<Message>();
+
+		List<Message> msgs = new ArrayList<>();
 		int i = 0;
 		while (i < count || count == 0) {
 			Message msg = mq.receive(wait);
@@ -592,7 +615,7 @@ public class A {
 		}
 		return msgs;
 	}
-	
+
 	protected void putData(final String data, final CommandLine cmdLine) throws IOException,
 			JMSException, ScriptException {
 		// Check if we have properties to put

@@ -17,6 +17,7 @@
 package co.nordlander.a;
 
 import static co.nordlander.a.A.*;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -514,63 +515,161 @@ public abstract class BaseTest {
     	assertEquals(1,remainingFiles.length); // one file left - the .dat one
     	assertEquals("file3.dat",remainingFiles[0].getName());
     }
-    
+
     @Test
     public void testDumpMessages() throws Exception {
-    	final String testCorrId = "MyCorrelationId";
-    	final String stringPropertyValue = "String Value - å";
-    	final String utfText = "Utf-8 Text - 😁";
-    	final Queue replyQueue = session.createQueue("test.reply.queue");
-    	final TextMessage tm1 = session.createTextMessage(utfText);
-    	
-    	tm1.setStringProperty("myStringProperty", stringPropertyValue);
-    	tm1.setIntProperty("myIntProperty", 42);
-    	tm1.setDoubleProperty("myDoubleProperty", Math.PI);
-    	tm1.setJMSType("myJmsType");
-    	tm1.setJMSCorrelationID(testCorrId);
-    	tm1.setJMSDeliveryMode(DeliveryMode.PERSISTENT);
-    	tm1.setJMSPriority(2);
-    	tm1.setJMSReplyTo(replyQueue);
-    	
-    	BytesMessage bm1 = session.createBytesMessage();
-    	bm1.writeBytes(utfText.getBytes(StandardCharsets.UTF_8));
-    	
-    	MessageProducer mp = session.createProducer(testQueue);
+        final String testCorrId = "MyCorrelationId";
+        final String stringPropertyValue = "String Value - å";
+        final String utfText = "Utf-8 Text - 😁";
+        final Queue replyQueue = session.createQueue("test.reply.queue");
+        final TextMessage tm1 = session.createTextMessage(utfText);
+
+        tm1.setStringProperty("myStringProperty", stringPropertyValue);
+        tm1.setIntProperty("myIntProperty", 42);
+        tm1.setDoubleProperty("myDoubleProperty", Math.PI);
+        tm1.setJMSType("myJmsType");
+        tm1.setJMSCorrelationID(testCorrId);
+        tm1.setJMSDeliveryMode(DeliveryMode.PERSISTENT);
+        tm1.setJMSPriority(2);
+        tm1.setJMSReplyTo(replyQueue);
+
+        BytesMessage bm1 = session.createBytesMessage();
+        bm1.writeBytes(utfText.getBytes(StandardCharsets.UTF_8));
+
+        MessageProducer mp = session.createProducer(testQueue);
         mp.send(tm1);
         mp.send(bm1);
         File folder = tempFolder.newFolder();
         File dumpFile = new File(folder, "dump.json");
-        
+
         String cmdLine = getConnectCommand() + "-" + CMD_WRITE_DUMP + " " + dumpFile.getAbsolutePath() + " -" +
                 CMD_WAIT + " 2000 -" + CMD_COUNT + " 2" + " TEST.QUEUE";
+        a.run(cmdLine.split(" "));
+
+        ObjectMapper om = new ObjectMapper();
+
+        String result = FileUtils.readFileToString(dumpFile, StandardCharsets.UTF_8);
+        System.out.println(result);
+        List<MessageDump> resultMsgs = Arrays.asList(om.readValue(result, MessageDump[].class));
+        assertEquals(2, resultMsgs.size());
+
+        MessageDump resultMsg1 = resultMsgs.get(0);
+        assertEquals("TextMessage", resultMsg1.type);
+        assertEquals(utfText, resultMsg1.body);
+        assertEquals(stringPropertyValue, resultMsg1.stringProperties.get("myStringProperty"));
+
+        // decode obj property to List and check consistency.
+        // TODO Actually only works with OpenWire, so ignoring this. Other implementations may only support String, Integer etc.
+//        String objectPropertyString = resultMsg1.objectProperties.get("myObjectProperty");
+        //       List<String> decodedObjProperty = SerializationUtils.deserialize(Base64.decodeBase64(objectPropertyString));
+        //       assertEquals(testList, decodedObjProperty);
+
+        assertEquals(new Integer(DeliveryMode.PERSISTENT), resultMsg1.JMSDeliveryMode);
+        assertEquals(testCorrId, resultMsg1.JMSCorrelationID);
+
+        MessageDump resultMsg2 = resultMsgs.get(1);
+        assertEquals("BytesMessage", resultMsg2.type);
+        assertEquals(utfText, new String(Base64.decodeBase64(resultMsg2.body), StandardCharsets.UTF_8));
+    }
+
+    @Test
+    public void testDumpMessages_RollbackOnError() throws Exception{
+        final String testCorrId = "MyCorrelationId";
+        final String stringPropertyValue = "String Value - å";
+        final String utfText = "Utf-8 Text - 😁";
+        final Queue replyQueue = session.createQueue("test.reply.queue");
+        final MessageProducer mp = session.createProducer(testQueue);
+                mp.send(createTextMessage(testCorrId, stringPropertyValue, utfText, replyQueue));
+
+        File folder = tempFolder.newFolder();
+        File dumpFile = new File(folder, "dump.json");
+
+        String cmdLine = getConnectCommand() + "-" + CMD_WRITE_DUMP + " " + dumpFile.getAbsolutePath() + " -" +
+                CMD_WAIT + " 2000 -"  + CMD_TRANSFORM_SCRIPT + "dummy -" + CMD_COUNT + " " + 1 + " TEST.QUEUE";
+        a.run(cmdLine.split(" "));
+        assertTrue("Output should contain error message",
+                output.grab().contains("Failed to write all messages to dump file"));
+
+        // check that our message is still on the queue
+        MessageConsumer consumer = session.createConsumer(testQueue);
+        Message message = consumer.receive(TEST_TIMEOUT);
+        assertTrue(message instanceof TextMessage);
+        assertEquals(utfText, ((TextMessage) message).getText());
+        assertEquals(stringPropertyValue, message.getStringProperty("myStringProperty"));
+        assertEquals(DeliveryMode.PERSISTENT, message.getJMSDeliveryMode());
+        assertEquals(testCorrId, message.getJMSCorrelationID());
+    }
+
+    /**
+     * Simple load test for dumping a queue's content to file.
+     * By default only loads and dumps 10 messages to avoid straining the CI server.
+     */
+    @Test
+    public void testDumpManyMessages() throws Exception {
+        final int numberOfMessages = 10; // increase to test with desired load
+        final String testCorrId = "MyCorrelationId";
+        final String stringPropertyValue = "String Value - å";
+        final String utfText = "Utf-8 Text - 😁";
+        final byte[] binaryData = IOUtils.toByteArray(getClass().getResourceAsStream("/Logo.png"));
+        final Queue replyQueue = session.createQueue("test.reply.queue");
+        final MessageProducer mp = session.createProducer(testQueue);
+        for (int i = 0; i < numberOfMessages; i++){
+            if (i % 2 == 0){
+                mp.send(createTextMessage(testCorrId, stringPropertyValue, utfText, replyQueue));
+            }else {
+                mp.send(createBytesMessage(binaryData));
+            }
+        }
+
+        File folder = tempFolder.newFolder();
+        File dumpFile = new File(folder, "dump.json");
+        
+        String cmdLine = getConnectCommand() + "-" + CMD_WRITE_DUMP + " " + dumpFile.getAbsolutePath() + " -" +
+                CMD_WAIT + " 2000 -" + CMD_COUNT + " " + (numberOfMessages + 10) + " TEST.QUEUE";
+        System.out.println("Running a with " + cmdLine);
         a.run(cmdLine.split(" "));
      
         ObjectMapper om = new ObjectMapper();
         
         String result = FileUtils.readFileToString(dumpFile, StandardCharsets.UTF_8);
-        System.out.println(result);
         List<MessageDump> resultMsgs = Arrays.asList(om.readValue(result, MessageDump[].class));
-        assertEquals(2, resultMsgs.size());
-        
-        MessageDump resultMsg1 = resultMsgs.get(0);
-        assertEquals("TextMessage", resultMsg1.type);
-        assertEquals(utfText, resultMsg1.body);
-        assertEquals(stringPropertyValue, resultMsg1.stringProperties.get("myStringProperty"));
-        
-        // decode obj property to List and check consistency. 
-        // TODO Actually only works with OpenWire, so ignoring this. Other implementations may only support String, Integer etc.
-//        String objectPropertyString = resultMsg1.objectProperties.get("myObjectProperty");
- //       List<String> decodedObjProperty = SerializationUtils.deserialize(Base64.decodeBase64(objectPropertyString));
- //       assertEquals(testList, decodedObjProperty);
-        
-        assertEquals(new Integer(DeliveryMode.PERSISTENT), resultMsg1.JMSDeliveryMode);
-        assertEquals(testCorrId, resultMsg1.JMSCorrelationID);
-        
-        MessageDump resultMsg2 = resultMsgs.get(1);
-        assertEquals("BytesMessage", resultMsg2.type);
-        assertEquals(utfText, new String(Base64.decodeBase64(resultMsg2.body), StandardCharsets.UTF_8));
+        assertEquals(numberOfMessages, resultMsgs.size());
+
+        for (int i = 0; i < numberOfMessages; i++){
+            if (i % 2 == 0){
+                MessageDump resultMsg1 = resultMsgs.get(i);
+                assertEquals("TextMessage", resultMsg1.type);
+                assertEquals(utfText, resultMsg1.body);
+                assertEquals(stringPropertyValue, resultMsg1.stringProperties.get("myStringProperty"));
+                assertEquals(new Integer(DeliveryMode.PERSISTENT), resultMsg1.JMSDeliveryMode);
+                assertEquals(testCorrId, resultMsg1.JMSCorrelationID);
+            }else {
+                MessageDump resultMsg2 = resultMsgs.get(1);
+                assertEquals("BytesMessage", resultMsg2.type);
+                assertArrayEquals(binaryData, Base64.decodeBase64(resultMsg2.body));
+            }
+        }
     }
-    
+
+    private BytesMessage createBytesMessage(byte[] bytes) throws JMSException {
+        BytesMessage bm1 = session.createBytesMessage();
+        bm1.writeBytes(bytes);
+        return bm1;
+    }
+
+    private TextMessage createTextMessage(String testCorrId, String stringPropertyValue, String utfText, Queue replyQueue) throws JMSException {
+        final TextMessage tm1 = session.createTextMessage(utfText);
+        tm1.setStringProperty("myStringProperty", stringPropertyValue);
+        tm1.setIntProperty("myIntProperty", 42);
+        tm1.setDoubleProperty("myDoubleProperty", Math.PI);
+        tm1.setJMSType("myJmsType");
+        tm1.setJMSCorrelationID(testCorrId);
+        tm1.setJMSDeliveryMode(DeliveryMode.PERSISTENT);
+        tm1.setJMSPriority(2);
+        tm1.setJMSReplyTo(replyQueue);
+        return tm1;
+    }
+
     @Test
     public void testRestoreDump() throws IOException, InterruptedException, JMSException {
     	// place file where it can be reached by a - that is on file system, not classpath.
