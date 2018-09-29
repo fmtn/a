@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>co.nordlander.a</groupId>
   <artifactId>a</artifactId>
-  <version>1.4.8-SNAPSHOT</version>
+  <version>1.4.8</version>
 
   <properties>
     <activemq.version>5.14.5</activemq.version>
