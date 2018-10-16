@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [unreleased]
 
+## [1.4.9]
+### Security 
+- Updated jackson-databind dependency 
+
 ## [1.4.8] - 2018-09-29
 ### Added
 - #31 Exit code 1 on exception for better shell-script integration.
