@@ -1201,7 +1201,7 @@ public class A {
 		opts.addOption(intProperty);
 		
 		opts.addOption(CMD_WRITE_DUMP, "write-dump", true, "Write a dump of messages to a file. "
-						+ "Will preserve metadata and type. Can  be used with transformation option" );
+						+ "Will preserve metadata and type. Can  be used with transformation option.  Warning! Will consume queue!" );
 		
 		opts.addOption(CMD_RESTORE_DUMP, "restore-dump", true, "Restore a dump of messages in a file," + 
 						"created with -" + CMD_WRITE_DUMP + ". Can be used with transformation option.");
