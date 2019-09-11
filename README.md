@@ -89,7 +89,7 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-B
                                transformation option.
  -x,--write-dump <arg>         Write a dump of messages to a file. Will
                                preserve metadata and type. Can  be used
-                               with transformation option
+                               with transformation option. Warning! Will consume queue!
  -y,--jms-type <arg>           Sets JMSType header
 ```
 
