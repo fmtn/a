@@ -1,2 +1,2 @@
 @echo off
-java -jar %~dp0${project.build.finalName}-jar-with-dependencies.jar %*
+java -Dnashorn.args=--no-deprecation-warning -jar %~dp0${project.build.finalName}-jar-with-dependencies.jar %*

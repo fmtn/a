@@ -211,7 +211,7 @@ https://github.com/fmtn/a/releases/latest
 Given you have a truststore and a keystore in JKS format, you can edit your a start script, or run it manually like this.
 Note that the -Djavax parameters has to come before -jar. 
 ```
-java -Djavax.net.ssl.keyStore=/Users/petter/client.jks -Djavax.net.ssl.keyStorePassword=password -Djavax.net.ssl.trustStore=/Users/petter/truststore.jks -Djavax.net.ssl.trustStorePassword=password -jar a-1.4.3-jar-with-dependencies.jar -b ssl://example.org:61618 MY.QUEUE 
+java -Djavax.net.ssl.keyStore=/Users/petter/client.jks -Djavax.net.ssl.keyStorePassword=password -Djavax.net.ssl.trustStore=/Users/petter/truststore.jks -Djavax.net.ssl.trustStorePassword=password -jar a-1.5.0-jar-with-dependencies.jar -b ssl://example.org:61618 MY.QUEUE 
 ```
 
 ## Apply transformations

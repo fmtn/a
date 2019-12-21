@@ -564,7 +564,7 @@ public abstract class BaseTest {
         //       List<String> decodedObjProperty = SerializationUtils.deserialize(Base64.decodeBase64(objectPropertyString));
         //       assertEquals(testList, decodedObjProperty);
 
-        assertEquals(new Integer(DeliveryMode.PERSISTENT), resultMsg1.JMSDeliveryMode);
+        assertEquals(Integer.valueOf(DeliveryMode.PERSISTENT), resultMsg1.JMSDeliveryMode);
         assertEquals(testCorrId, resultMsg1.JMSCorrelationID);
 
         MessageDump resultMsg2 = resultMsgs.get(1);
@@ -641,7 +641,7 @@ public abstract class BaseTest {
                 assertEquals("TextMessage", resultMsg1.type);
                 assertEquals(utfText, resultMsg1.body);
                 assertEquals(stringPropertyValue, resultMsg1.stringProperties.get("myStringProperty"));
-                assertEquals(new Integer(DeliveryMode.PERSISTENT), resultMsg1.JMSDeliveryMode);
+                assertEquals(Integer.valueOf(DeliveryMode.PERSISTENT), resultMsg1.JMSDeliveryMode);
                 assertEquals(testCorrId, resultMsg1.JMSCorrelationID);
             }else {
                 MessageDump resultMsg2 = resultMsgs.get(1);
