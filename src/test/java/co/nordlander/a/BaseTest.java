@@ -17,12 +17,7 @@
 package co.nordlander.a;
 
 import static co.nordlander.a.A.*;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -170,11 +165,9 @@ public abstract class BaseTest {
     @Test
     public void testPutTopic() throws Exception{
         String cmdLine = getConnectCommand() + "-" + CMD_PUT + "\"test\"" + " topic://TEST.TOPIC";
-        Future<TextMessage> resultMessage = executor.submit(new Callable<TextMessage>(){
-            public TextMessage call() throws Exception {
-                MessageConsumer mc = session.createConsumer(testTopic);
-                return (TextMessage)mc.receive(TEST_TIMEOUT + 6000L);
-            }
+        Future<TextMessage> resultMessage = executor.submit(() -> {
+            MessageConsumer mc = session.createConsumer(testTopic);
+            return (TextMessage)mc.receive(TEST_TIMEOUT + 8000L);
         });
         a.run(cmdLine.split(" "));
         assertEquals("test",resultMessage.get().getText());
@@ -227,11 +220,9 @@ public abstract class BaseTest {
     public void testGetTopic() throws Exception{
         final String cmdLine = getConnectCommand() + "-" + CMD_GET + " -" +
                 CMD_WAIT + " 4000" + " topic://TEST.TOPIC";
-        Future<String> resultString = executor.submit(new Callable<String>(){
-            public String call() throws Exception {
-                a.run(cmdLine.split(" "));
-                return output.grab();
-            }
+        Future<String> resultString = executor.submit(() -> {
+            a.run(cmdLine.split(" "));
+            return output.grab();
         });
         Thread.sleep(300); // TODO remove somehow?
         MessageProducer mp = session.createProducer(testTopic);
@@ -301,7 +292,7 @@ public abstract class BaseTest {
         mp.send(testMessage);
         a.run(cmdLine.split(" "));
         MessageConsumer mc = session.createConsumer(sourceQueue);
-        TextMessage msg = null;
+        TextMessage msg;
         // Verify NO messages are left on source queue
         msg = (TextMessage)mc.receive(TEST_TIMEOUT);
         assertNull(msg);
@@ -348,7 +339,7 @@ public abstract class BaseTest {
         mp.send(testMessage);
         a.run(cmdLine.split(" "));
         MessageConsumer mc = session.createConsumer(sourceQueue);
-        TextMessage msg = null;
+        TextMessage msg;
         // Verify NO messages are left on source queue
         msg = (TextMessage)mc.receive(TEST_TIMEOUT);
         assertNull(msg);
@@ -506,10 +497,10 @@ public abstract class BaseTest {
     	MessageConsumer mc = session.createConsumer(testQueue);
     	TextMessage msg1 = (TextMessage)mc.receive(TEST_TIMEOUT);
     	assertNotNull(msg1);
-    	assertFalse(file3.equals(msg1.getText()));
+        assertNotEquals(file3, msg1.getText());
     	TextMessage msg2 = (TextMessage)mc.receive(TEST_TIMEOUT);
     	assertNotNull(msg2);
-    	assertFalse(file3.equals(msg2.getText()));
+        assertNotEquals(file3, msg2.getText());
     	assertNull(mc.receive(TEST_TIMEOUT));
     	File[] remainingFiles = folder.listFiles();
     	assertEquals(1,remainingFiles.length); // one file left - the .dat one

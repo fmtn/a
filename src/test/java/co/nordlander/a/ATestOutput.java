@@ -31,7 +31,7 @@ public class ATestOutput implements AOutput{
             System.out.print(arg.toString());
         }
         sb.append(LN);
-        System.out.println("");
+        System.out.println();
     }
 
     public String grab(){
