@@ -6,9 +6,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [unreleased]
 
-## [1.4.9]
-### Security 
-- Updated jackson-databind dependency 
+## [1.5.0]
+### Removed 
+- Support for Java 1.7
+
+### Changed
+- ActiveMQ updated to version 5.15.11
+- ActiveMQ Artemis updated to version 2.10.1
+- Common Codec updated to 1.13
+- Commons IO updated to 2.6
+
 
 ## [1.4.8] - 2018-09-29
 ### Added

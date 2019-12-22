@@ -24,7 +24,7 @@ import javax.jms.MessageProducer;
 import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
 import org.apache.activemq.artemis.core.config.CoreQueueConfiguration;
-import org.apache.activemq.artemis.jms.server.embedded.EmbeddedJMS;
+import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import static co.nordlander.a.A.CMD_ARTEMIS_CORE;
@@ -43,12 +43,12 @@ import java.util.Arrays;
 public class ArtemisJmsTest extends BaseTest{
 
    protected static final String AMQ_ARTEMIS_URL = "tcp://localhost:61616";
-   protected static EmbeddedJMS broker;
+   protected static EmbeddedActiveMQ broker;
 
    @BeforeClass
    public static void createArtemisBroker() throws Exception{
       System.out.println("Starting Artemis");
-      broker = new EmbeddedJMS();
+      broker = new EmbeddedActiveMQ();
       broker.start();
    }
 

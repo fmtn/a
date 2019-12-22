@@ -87,13 +87,11 @@ public class A {
 	MessageDumpTransformer transformer = new MessageDumpTransformer();
 
 	// Customizable output
-	protected AOutput output = new AOutput() {
-		public void output(Object... args) {
-			for (Object arg : args) {
-				System.out.print(arg.toString());
-			}
-			System.out.println("");
+	protected AOutput output = args -> {
+		for (Object arg : args) {
+			System.out.print(arg.toString());
 		}
+		System.out.println("");
 	};
 	
 	// Commands
