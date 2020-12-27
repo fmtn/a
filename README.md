@@ -35,7 +35,8 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-B
                                Defaults to connectionFactory. Use with -J
  -f,--find <arg>               Search for messages in queue with this
                                value in payload. Use with browse.
- -g,--get                      Get a message from destination
+ -g,--get                      Get a message from destination (which delete 
+ 			       messages on server queue)
  -H <property=value>           use value for given String property. Can be
                                used several times.
  -I <property=value>           use value for given Integer property. Can
