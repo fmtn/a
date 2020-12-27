@@ -2,15 +2,15 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>co.nordlander.a</groupId>
   <artifactId>a</artifactId>
-  <version>1.5.0-SNAPSHOT</version>
+  <version>1.4.9-SNAPSHOT</version>
 
   <properties>
-    <activemq.version>5.15.11</activemq.version>
+    <activemq.version>5.16.0</activemq.version>
     <spring.version>4.3.24.RELEASE</spring.version>
     <deb.lib.dir>/usr/share/${project.artifactId}/lib</deb.lib.dir>
     <deb.bin>/usr/bin/${project.artifactId}</deb.bin>
     <deb.skip>true</deb.skip>
-    <artemis.version>2.10.1</artemis.version>
+    <artemis.version>2.16.0</artemis.version>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -30,22 +30,22 @@
     <dependency>
       <groupId>commons-cli</groupId>
       <artifactId>commons-cli</artifactId>
-      <version>1.2</version>
+      <version>1.4</version>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.6</version>
+      <version>2.8.0</version>
     </dependency>
     <dependency>
 	    <groupId>commons-codec</groupId>
 	    <artifactId>commons-codec</artifactId>
-	    <version>1.13</version>
+	    <version>1.15</version>
 	 </dependency>
 	 <dependency>
 	    <groupId>org.apache.commons</groupId>
 	    <artifactId>commons-lang3</artifactId>
-	    <version>3.9</version>
+	    <version>3.11</version>
 	 </dependency>
     <dependency>
       <groupId>org.apache.geronimo.specs</groupId>
@@ -76,7 +76,7 @@
     <dependency>
       <groupId>org.jboss.logmanager</groupId>
       <artifactId>jboss-logmanager</artifactId>
-      <version>2.1.14.Final</version>
+      <version>2.1.17.Final</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -87,7 +87,7 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.10.1</version>
+      <version>2.10.5.1</version>
     </dependency>
 
     <!-- Test dependencies -->
@@ -192,7 +192,7 @@
     <dependency>
       <groupId>org.apache.xbean</groupId>
       <artifactId>xbean-spring</artifactId>
-      <version>4.14</version>
+      <version>4.18</version>
       <scope>test</scope>
     </dependency>
 
