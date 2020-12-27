@@ -835,6 +835,14 @@ public class A {
 		if (conn instanceof org.apache.activemq.ActiveMQConnection) {
 			final org.apache.activemq.ActiveMQConnection amqConn = (org.apache.activemq.ActiveMQConnection) conn;
 
+			// waiting to allow Destination source converge all advisory messages. Waiting time may be extended through wait option
+			long wait = Long.parseLong(cmdLine.getOptionValue(CMD_WAIT, DEFAULT_WAIT));
+			try{
+				Thread.sleep(wait);
+			} catch(InterruptedException e){
+				return;
+			}
+
 			final Set<ActiveMQQueue> queues = amqConn.getDestinationSource()
 					.getQueues();
 			final Set<ActiveMQTopic> topics = amqConn.getDestinationSource()
