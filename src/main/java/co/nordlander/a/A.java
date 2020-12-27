@@ -133,6 +133,7 @@ public class A {
 	public static final String CMD_RESTORE_DUMP = "X";
 	public static final String CMD_WRITE_DUMP = "x";
 	public static final String CMD_JMS_TYPE = "y";
+	public static final String CMD_TTL = "z";
 	
 	// Various constants
 	public static final long SLEEP_TIME_BETWEEN_FILE_CHECK = 1000L;
@@ -670,6 +671,17 @@ public class A {
 			}
 		}
 
+		if (cmdLine.hasOption(CMD_TTL)) {
+			try {
+				long ttl = Long.parseLong(cmdLine
+						.getOptionValue(CMD_TTL));
+				mp.setTimeToLive(ttl);
+			} catch (NumberFormatException nfe) {
+				throw new NumberFormatException(
+						"JMSExpiry has to be a long value");
+			}
+		}
+
 		if (cmdLine.hasOption(CMD_JMS_TYPE)) {
 			outMsg.setJMSType(cmdLine.getOptionValue(CMD_JMS_TYPE));
 		}
@@ -1127,6 +1139,7 @@ public class A {
 		opts.addOption(CMD_USER, "user", true, "Username to connect to broker");
 		opts.addOption(CMD_PASS, "pass", true, "Password to connect to broker");
 		opts.addOption(CMD_PRIORITY, "priority", true, "sets JMSPriority");
+		opts.addOption(CMD_TTL, "ttl", true, "sets JMSExpiry");
 		opts.addOption(CMD_AMQP, "amqp", false,
 				"Set protocol to AMQP. Defaults to OpenWire");
 		opts.addOption(
