@@ -213,8 +213,12 @@ There is a Docker file with the project. You can build a Docker image and use A 
 
 ```bash
     docker build -t a:latest .
-    docker run a:latest a -p "foobar" q
+    docker run --rm a:latest a -p "foobar" q
 ```
+
+Please note that you need to pass the entire command to the docker run
+
+The default hostname has been replaced with `host.docker.internal` as the original hostname `localhost` points to a location within the docker container. If the broker is not on the docker host, the actual broker hostname still needs to be specified as usual. The hostname of the broker may vary depending on the container environment, Kubernetes, Docker Compose, plain vanilla Docker or what have you.
 
 ## Use SSL
 Given you have a truststore and a keystore in JKS format, you can edit your a start script, or run it manually like this.
