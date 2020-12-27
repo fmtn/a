@@ -1,19 +1,9 @@
-FROM debian:stable
+# -- Build time image --
+FROM maven:3.6.3-openjdk-8-slim AS build
 
-MAINTAINER "Petter Nordlander"
+LABEL maintainer="petter@fourmation.se"
 
 ARG LOCATION=/usr/local/a
-
-# Update the debian package catalog
-RUN apt-get update
-
-# Upgrade any existing package, typically security patches and tzdata
-RUN apt-get upgrade -y
-
-# Install maven
-# all further tools and libraries will be pulled by MVN
-# explicitly install default-jre-headless so that it will not be removed later
-RUN apt-get install -y maven default-jre-headless
 
 # Copy all required source code into the image
 RUN mkdir --parents ${LOCATION}/
@@ -33,19 +23,20 @@ RUN sed --in-place \
 # Build the A software in the usual way
 RUN cd /usr/local/a && mvn package -DskipTests
 
+# -- Runtime Image --
+FROM openjdk:8-alpine
+
+ARG JARFILE=a-1.4.9-SNAPSHOT-jar-with-dependencies.jar
+COPY --from=build /usr/local/a/target/${JARFILE} /a/${JARFILE}
+
 # Create a new command that is always in the PATH
 RUN echo "#!/bin/sh" > /usr/bin/a && \
 	echo "java \
 		-Dnashorn.args=--no-deprecation-warning \
-		-cp ${LOCATION}/target/a-1.5.0-SNAPSHOT-jar-with-dependencies.jar \
+		-cp /a/${JARFILE} \
 		co.nordlander.a.A \"\$@\"" >> /usr/bin/a && \
 	chmod a+rx /usr/bin/a
 RUN cat /usr/bin/a
-
-# Ready
-# let's shrink the image
-RUN apt-get remove -y maven
-RUN apt autoremove -y
 
 # This will only show the usage
 CMD a

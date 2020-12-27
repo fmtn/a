@@ -5,10 +5,9 @@ A is a JMS testing/admin utility specialized for ActiveMQ.
 
 Used to send, browse and put messages on queues.
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Build Status](https://travis-ci.org/fmtn/a.svg?branch=master)](https://travis-ci.org/fmtn/a)
+[![Build Status](https://github.com/fmtn/a/workflows/Java%20CI%20with%20Maven/badge.svg)](https://github.com/fmtn/a)
 
-
-```
+```bash
 usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-B
        <property=value>] [-b <arg>] [-C <arg>] [-c <arg>] [-E <arg>] [-e
        <arg>] [-F <arg>] [-f <arg>] [-g] [-H <property=value>] [-I
@@ -36,7 +35,7 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-B
  -f,--find <arg>               Search for messages in queue with this
                                value in payload. Use with browse.
  -g,--get                      Get a message from destination (which delete 
- 			       messages on server queue)
+                                    messages on server queue)
  -H <property=value>           use value for given String property. Can be
                                used several times.
  -I <property=value>           use value for given Integer property. Can
@@ -92,10 +91,11 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-B
                                preserve metadata and type. Can  be used
                                with transformation option. Warning! Will consume queue!
  -y,--jms-type <arg>           Sets JMSType header
+ -z,--ttl <arg>                sets JMSExpiry
 ```
 
 Example 1. Put message with payload "foobar" to queue q on local broker:
-    
+
     $a -p "foobar" q
 
 Example 2. Put message with payload of file foo.bar to queue q on local broker, also set a property
@@ -207,11 +207,19 @@ https://github.com/fmtn/a/releases/latest
 2. Make sure the extracted folder is on path.
 2. Run a.bat from any place.
 
+## Use with docker
+
+There is a Docker file with the project. You can build a Docker image and use A from Docker.
+
+```bash
+    docker build -t a:latest .
+    docker run a:latest a -p "foobar" q
+```
 
 ## Use SSL
 Given you have a truststore and a keystore in JKS format, you can edit your a start script, or run it manually like this.
 Note that the -Djavax parameters has to come before -jar. 
-```
+```bash
 java -Djavax.net.ssl.keyStore=/Users/petter/client.jks -Djavax.net.ssl.keyStorePassword=password -Djavax.net.ssl.trustStore=/Users/petter/truststore.jks -Djavax.net.ssl.trustStorePassword=password -jar a-1.5.0-jar-with-dependencies.jar -b ssl://example.org:61618 MY.QUEUE 
 ```
 
@@ -235,14 +243,17 @@ and
 
 This can be powerful, for instance, convert TextMessages to BytesMessages:
 
+```java
     // TextMessage to BytesMessage encoded as UTF-8
     msg.type = 'BytesMessage';
     msg.encode(msg.body, 'UTF-8');
+```
 
 or set some message property that is missing
 
+```java
     msg.stringProperties.put('foo', 'bar');
-
+```
 
 ## Batch files
 If you want to send a large amount of similar messages, where only a small value is alterd. You can use the batch command -W
