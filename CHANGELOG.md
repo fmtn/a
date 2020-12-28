@@ -10,12 +10,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Removed 
 - Support for Java 1.7
 
+### Added
+- #51 Docker support (by @erwindon)
+- #46 Expiry option (by @erwindon)
+
+### Fixed
+- #43 Batch messages respect -t, -y, -z, -r and -i
+- #47 Updated docs (by @oDevArc)
+- #37, #44 List queues and maxBrowserPageSize better documented.
+
 ### Changed
-- ActiveMQ updated to version 5.15.11
-- ActiveMQ Artemis updated to version 2.10.1
+- ActiveMQ updated to version 5.16.0
+- ActiveMQ Artemis updated to version 2.16.0
 - Common Codec updated to 1.13
 - Commons IO updated to 2.6
-
+- Updated to Java 8
 
 ## [1.4.8] - 2018-09-29
 ### Added
