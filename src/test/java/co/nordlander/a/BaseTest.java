@@ -168,6 +168,7 @@ public abstract class BaseTest {
             MessageConsumer mc = session.createConsumer(testTopic);
             return (TextMessage)mc.receive(TEST_TIMEOUT + 8000L);
         });
+        Thread.sleep(SHORT_TEST_TIMEOUT);
         a.run(cmdLine.split(" "));
         assertEquals("test",resultMessage.get().getText());
     }
