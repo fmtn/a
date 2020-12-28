@@ -1,5 +1,6 @@
-<img src="https://raw.githubusercontent.com/fmtn/a/master/logo/Logo.png" width="250">
+# A
 
+<img src="https://raw.githubusercontent.com/fmtn/a/master/logo/Logo.png" width="250">
 
 A is a JMS testing/admin utility specialized for ActiveMQ.
 
@@ -103,64 +104,65 @@ This is limited by the setting - maxBrowsePageSize in broker, default is 400. Th
 
 Example 1. Put message with payload "foobar" to queue q on local broker:
 
-    $a -p "foobar" q
+`$a -p "foobar" q`
 
 Example 2. Put message with payload of file foo.bar to queue q on local broker, also set a property
-    
-    $a -p "@foo.bar" -Hfoo=bar q
+
+`$a -p "@foo.bar" -Hfoo=bar q`
 
 Example 3. Browse five messages from queue q.
- 
-    $a -c 5 q
+
+`$a -c 5 q`
 
 Example 4. Put 100 messages to queue q (for load test etc)
 
-    $a -p "foobar" -c 100 q
+`$a -p "foobar" -c 100 q`
 
 Example 5. Get message from queue and show JMS headers
-    
-    $a -g -j q
+
+`$a -g -j q`
 
 Example 6. Put file foo.bar as a byte message on queue q
-    
-    $a -p "@foo.bar" -t bytes q
+
+`$a -p "@foo.bar" -t bytes q`
 
 Example 7. Put file foo.bar as text message on queue q, with encoding EBCDIC CP037 (any charset known on server/JVM should work)
-    
-    $a -p "@foo.bar" -e CP037 q
-    
+
+`$a -p "@foo.bar" -e CP037 q`
+
 Example 8. Read all XML files in a folder input an put them on queue q. Files are deleted afterwards.
 
-    $a -R "input/*.xml" q
+`$a -R "input/*.xml" q`
 
 Example 9. Put file foo.json as map message on queue q
 
-    $a -p "@foo.json" -t map q
-    
+`$a -p "@foo.json" -t map q`
+
 Example 10. Put a map message on a queue using json format.
-    
-    $a -p "{\"a\":\"a message tool\"}" -t map q
+
+`$a -p "{\"a\":\"a message tool\"}" -t map q`
 
 Example 11. Backup/dump messages on a queue with metadata
-    
-    $a -x dump.json q
+
+`$a -x dump.json q`
 
 Example 12. Restore dump of messages with metadata to a queue
-    
-    $a -X dump.json q2
+
+`$a -X dump.json q2`
 
 Example 12. Restore and transform messagse
-    
-    $a -X dump.json -S @transform.js q2
+
+`$a -X dump.json -S @transform.js q2`
 
 ## Use AMQP 1.0
+
 A defaults to ActiveMQ default protocol, OpenWire. You can also use AMQP 1.0.
 In theory, it should work with all AMQP 1.0 compliant brokers. It does not work with older versions of AMQP.
 
-    $a -A -b "amqp://guest:guest@localhost:5672" -p "foobar" q
-    
-    
+`$a -A -b "amqp://guest:guest@localhost:5672" -p "foobar" q`
+
 ## Azure Service Bus
+
 Service Bus supports AMQP 1.0 so it's possible to use A to connect.
 However, it does not support transactions, so the -T option has to be set to deal with that.
 
@@ -169,26 +171,27 @@ The password is the URL-encoded key for that policy. These are found in the Azur
 
 Example command to send a message to Azure Service Bus:
 
-	$a -A -T -b "amqps://mypolicyname:iAkywS...@mynamespace.servicebus.windows.net" -p "Test msg" q
-
+`$a -A -T -b "amqps://mypolicyname:iAkywS...@mynamespace.servicebus.windows.net" -p "Test msg" q`
 
 A word of warning! There are some features not working with AMQP 1.0 in Service Bus. Some of which are mandatory to support the JMS API fully.
 This means some of the features of A will not work - or behave strangely.
 
 ## Use Artemis Core
+
 Use Artemis core protocol (HornetQ) with the -a option.
 
-    $a -a -b "tcp://localhost:61616" -p "foobar" q
+`$a -a -b "tcp://localhost:61616" -p "foobar" q`
 
 Please note that this won't auto deploy the queue in current versions of Artemis. Using OpenWire will autodeploy the queue.
 
 ## Use JNDI to connect
+
 To connect in a protocol agnostic way, you can specify a JNDI file that points out the JMS provider and settings.
 
 Simply create a jndi.properties file "at classpath". Then link to it jusing the -J (--jndi) option. Please name your
 ConnectionFactory "connectionFactory". Otherwise, the name has to be supplied using the -F (--jndi-cf-name) option.
 
-    $a -J jndi.properties -p "foobar" q
+`$a -J jndi.properties -p "foobar" q`
 
 This way, you can even connect to non ActiveMQ/AMQP brokers. You simply need to provide a JNDI config and the client at classpath.
 
@@ -196,23 +199,27 @@ This way, you can even connect to non ActiveMQ/AMQP brokers. You simply need to 
 
 If you want to build the project.
 
-    $mvn clean install
-    
+`$mvn clean install`
+
+However, it is probably easiest to simply build a Docker container.
+
 ## Download
 
-Download the distribution from the latest release. 
-https://github.com/fmtn/a/releases/latest
+Download the distribution from the latest release.
+<https://github.com/fmtn/a/releases/latest>
 
 ## Install in Unix environment
+
 1. Unzip distribution somewhere
 2. Make sure the extracted folder is on path.
 3. chmod +x a
 4. Run a from any place.
 
 ## Install in Windows environment
+
 1. Unzip distribution somewhere
 2. Make sure the extracted folder is on path.
-2. Run a.bat from any place.
+3. Run a.bat from any place.
 
 ## Use with docker
 
@@ -223,13 +230,21 @@ There is a Docker file with the project. You can build a Docker image and use A 
     docker run --rm a:latest a -p "foobar" q
 ```
 
+You can also use prebuilt docker images.
+
+```bash
+    docker run --rm fmtn/a-util a -p "foobar" q 
+```
+
 Please note that you need to pass the entire command to the docker run
 
 The default hostname has been replaced with `host.docker.internal` as the original hostname `localhost` points to a location within the docker container. If the broker is not on the docker host, the actual broker hostname still needs to be specified as usual. The hostname of the broker may vary depending on the container environment, Kubernetes, Docker Compose, plain vanilla Docker or what have you.
 
 ## Use SSL
+
 Given you have a truststore and a keystore in JKS format, you can edit your a start script, or run it manually like this.
-Note that the -Djavax parameters has to come before -jar. 
+Note that the -Djavax parameters has to come before -jar.
+
 ```bash
 java -Djavax.net.ssl.keyStore=/Users/petter/client.jks -Djavax.net.ssl.keyStorePassword=password -Djavax.net.ssl.trustStore=/Users/petter/truststore.jks -Djavax.net.ssl.trustStorePassword=password -jar a-1.5.0-jar-with-dependencies.jar -b ssl://example.org:61618 MY.QUEUE 
 ```
@@ -255,7 +270,7 @@ To deal with a BytesMessage use
 
 `msg.encode('Some string', 'UTF-8');`
 
-and 
+and
 
 `var contentAsString = msg.decode('UTF-8');`
 
@@ -274,23 +289,28 @@ or set some message property that is missing
 ```
 
 ## Batch files
+
 If you want to send a large amount of similar messages, where only a small value is alterd. You can use the batch command -W
 
 So, create a file where all those different values are, like id:s, names or whatnot. One entry per line.
 batch.txt:
 
+```text
     id1
     id2
     id3
+```
 
 Then use a script together with put, like this:
 
-    a -p "<xml>PLACEHOLDER</xml>" -S "msg.body=msg.body.replace('PLACEHOLDER',entry);" -W /path/to/batch.txt SOME.QUEUE
+`a -p "<xml>PLACEHOLDER</xml>" -S "msg.body=msg.body.replace('PLACEHOLDER',entry);" -W /path/to/batch.txt SOME.QUEUE`
 
 will produce three messages on SOME.QUEUE.
 
+```xml
     <xml>id1</xml>
     <xml>id2</xml>
     <xml>id3</xml>
+```
 
 Using -W is much faster than invoking A for each message, since it does not require a reconnection per message.
