@@ -71,6 +71,7 @@ public abstract class BaseTest {
 
     protected static final String LN = System.getProperty("line.separator");
     protected static final long TEST_TIMEOUT = 2000L;
+    protected static final long SHORT_TEST_TIMEOUT = 100L;
     protected Connection connection;
     protected Session session;
     protected ConnectionFactory cf;
@@ -151,7 +152,7 @@ public abstract class BaseTest {
         final int priority = 6;
         final String type = "MyType";
         String cmdLine = getConnectCommand() + "-" + CMD_PRIORITY + " " + priority + " -" + CMD_JMS_TYPE + " " + type 
-                +  " -" + CMD_PUT + "\"test\"" + " TEST.QUEUE";
+                +  " -" + CMD_PUT + " test" + " TEST.QUEUE";
         a.run(cmdLine.split(" "));
         MessageConsumer mc = session.createConsumer(testQueue);
         TextMessage msg = (TextMessage)mc.receive(TEST_TIMEOUT);
@@ -162,7 +163,7 @@ public abstract class BaseTest {
 
     @Test
     public void testPutTopic() throws Exception{
-        String cmdLine = getConnectCommand() + "-" + CMD_PUT + "\"test\"" + " topic://TEST.TOPIC";
+        String cmdLine = getConnectCommand() + "-" + CMD_PUT + " test" + " topic://TEST.TOPIC";
         Future<TextMessage> resultMessage = executor.submit(() -> {
             MessageConsumer mc = session.createConsumer(testTopic);
             return (TextMessage)mc.receive(TEST_TIMEOUT + 8000L);
@@ -175,7 +176,7 @@ public abstract class BaseTest {
     @Test
     public void testPutQueueWithSlash() throws Exception {
         final String queueWithSlash = "MY/QUEUE";
-        final String cmdLine = getConnectCommand() + "-" + CMD_PUT + " \"test\" " + queueWithSlash;
+        final String cmdLine = getConnectCommand() + "-" + CMD_PUT + " test " + queueWithSlash;
         System.out.println("Testing cmd: " + cmdLine);
         a.run(cmdLine.split(" "));
         MessageConsumer mc = session.createConsumer(session.createQueue(queueWithSlash));
@@ -247,7 +248,7 @@ public abstract class BaseTest {
         assertNotNull(msg);
         msg = (TextMessage)mc.receive(TEST_TIMEOUT);
         assertNotNull(msg);
-        msg = (TextMessage)mc.receive(TEST_TIMEOUT);
+        msg = (TextMessage)mc.receive(SHORT_TEST_TIMEOUT);
         assertNull(msg);
         // Verify messages are copied to target queue
         mc = session.createConsumer(targetQueue);
@@ -255,7 +256,7 @@ public abstract class BaseTest {
         assertNotNull(msg);
         msg = (TextMessage)mc.receive(TEST_TIMEOUT);
         assertNotNull(msg);
-        msg = (TextMessage)mc.receive(TEST_TIMEOUT);
+        msg = (TextMessage)mc.receive(SHORT_TEST_TIMEOUT);
         assertNull(msg);
     }
 
@@ -292,7 +293,7 @@ public abstract class BaseTest {
         MessageConsumer mc = session.createConsumer(sourceQueue);
         TextMessage msg;
         // Verify NO messages are left on source queue
-        msg = (TextMessage)mc.receive(TEST_TIMEOUT);
+        msg = (TextMessage)mc.receive(SHORT_TEST_TIMEOUT);
         assertNull(msg);
         // Verify messages are moved to target queue
         mc = session.createConsumer(targetQueue);
@@ -300,7 +301,7 @@ public abstract class BaseTest {
         assertNotNull(msg);
         msg = (TextMessage)mc.receive(TEST_TIMEOUT);
         assertNotNull(msg);
-        msg = (TextMessage)mc.receive(TEST_TIMEOUT);
+        msg = (TextMessage)mc.receive(SHORT_TEST_TIMEOUT);
         assertNull(msg);
 
     }
@@ -339,7 +340,7 @@ public abstract class BaseTest {
         MessageConsumer mc = session.createConsumer(sourceQueue);
         TextMessage msg;
         // Verify NO messages are left on source queue
-        msg = (TextMessage)mc.receive(TEST_TIMEOUT);
+        msg = (TextMessage)mc.receive(SHORT_TEST_TIMEOUT);
         assertNull(msg);
         // Verify messages are moved to target queue
         mc = session.createConsumer(targetQueue);
@@ -347,7 +348,7 @@ public abstract class BaseTest {
         assertNotNull(msg);
         msg = (TextMessage)mc.receive(TEST_TIMEOUT);
         assertNotNull(msg);
-        msg = (TextMessage)mc.receive(TEST_TIMEOUT);
+        msg = (TextMessage)mc.receive(SHORT_TEST_TIMEOUT);
         assertNull(msg);
     }
 
@@ -375,7 +376,7 @@ public abstract class BaseTest {
         assertNotNull(msg);
 
         // Verify NO messages are left on source queue
-        msg = (TextMessage)mc.receive(TEST_TIMEOUT);
+        msg = (TextMessage)mc.receive(SHORT_TEST_TIMEOUT);
         assertNull(msg);
 
         // Verify 4 messages is moved to target queue
@@ -392,7 +393,7 @@ public abstract class BaseTest {
 
 	
         // Verify NO messages are left on target queue
-        msg = (TextMessage)mc.receive(TEST_TIMEOUT);
+        msg = (TextMessage)mc.receive(SHORT_TEST_TIMEOUT);
         assertNull(msg);
     }
 
@@ -487,7 +488,7 @@ public abstract class BaseTest {
     	FileUtils.writeStringToFile(new File(folder, "file1.txt"), file1, StandardCharsets.UTF_8);
     	FileUtils.writeStringToFile(new File(folder, "file2.txt"), file2, StandardCharsets.UTF_8);
     	FileUtils.writeStringToFile(new File(folder, "file3.dat"), file3, StandardCharsets.UTF_8);
-    	Thread.sleep(2000L); // Saturate file age
+    	Thread.sleep(TEST_TIMEOUT); // Saturate file age
     	final String fileFilter = folder.getAbsolutePath() + "/*.txt";
     	final String cmdLine = getConnectCommand() + "-" + CMD_READ_FOLDER + " " + fileFilter + " TEST.QUEUE";
     	a.run(cmdLine.split(" "));
@@ -499,7 +500,7 @@ public abstract class BaseTest {
     	TextMessage msg2 = (TextMessage)mc.receive(TEST_TIMEOUT);
     	assertNotNull(msg2);
         assertNotEquals(file3, msg2.getText());
-    	assertNull(mc.receive(TEST_TIMEOUT));
+    	assertNull(mc.receive(SHORT_TEST_TIMEOUT));
     	File[] remainingFiles = folder.listFiles();
     	assertEquals(1,remainingFiles.length); // one file left - the .dat one
     	assertEquals("file3.dat",remainingFiles[0].getName());
@@ -614,7 +615,7 @@ public abstract class BaseTest {
         File dumpFile = new File(folder, "dump.json");
         
         String cmdLine = getConnectCommand() + "-" + CMD_WRITE_DUMP + " " + dumpFile.getAbsolutePath() + " -" +
-                CMD_WAIT + " 2000 -" + CMD_COUNT + " " + (numberOfMessages + 10) + " TEST.QUEUE";
+                CMD_WAIT + " 200 -" + CMD_COUNT + " " + (numberOfMessages + 10) + " TEST.QUEUE";
         System.out.println("Running a with " + cmdLine);
         a.run(cmdLine.split(" "));
      
@@ -774,7 +775,7 @@ public abstract class BaseTest {
     protected List<TextMessage> getAllMessages(MessageConsumer mc) throws JMSException {
         TextMessage msg = null;
         List<TextMessage> msgs = new ArrayList<TextMessage>();
-        while( (msg = (TextMessage) mc.receive(TEST_TIMEOUT))!=null){
+        while( (msg = (TextMessage) mc.receive(SHORT_TEST_TIMEOUT))!=null){
             msgs.add(msg);
         }
         return msgs;
