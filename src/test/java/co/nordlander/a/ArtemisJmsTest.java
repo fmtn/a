@@ -17,23 +17,19 @@
 
 package co.nordlander.a;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.Message;
-import javax.jms.MessageProducer;
-
-import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.QueueConfiguration;
 import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
-import org.apache.activemq.artemis.core.config.CoreQueueConfiguration;
 import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import static co.nordlander.a.A.CMD_ARTEMIS_CORE;
-import static co.nordlander.a.A.CMD_BROKER;
-import static co.nordlander.a.A.CMD_COUNT;
-import static co.nordlander.a.A.CMD_GET;
-import static org.junit.Assert.assertEquals;
 
+import javax.jms.ConnectionFactory;
+import javax.jms.Message;
+import javax.jms.MessageProducer;
 import java.util.Arrays;
+
+import static co.nordlander.a.A.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests A with Artemis/HornetQ native protocol.
@@ -103,8 +99,8 @@ public class ArtemisJmsTest extends BaseTest{
    }
 
    public void clearBroker() throws Exception {
-      for(CoreQueueConfiguration qc : broker.getActiveMQServer().getConfiguration().getQueueConfigurations()){
-         broker.getActiveMQServer().destroyQueue(new SimpleString(qc.getName()));
+      for(QueueConfiguration qc : broker.getActiveMQServer().getConfiguration().getQueueConfigs()){
+         broker.getActiveMQServer().destroyQueue(qc.getName());
       }
    }
 }
