@@ -26,14 +26,13 @@ RUN cd /usr/local/a && mvn package -DskipTests
 # -- Runtime Image --
 FROM openjdk:8-alpine
 
-ARG JARFILE=a-1.4.9-SNAPSHOT-jar-with-dependencies.jar
-COPY --from=build /usr/local/a/target/${JARFILE} /a/${JARFILE}
+COPY --from=build /usr/local/a/target/*-jar-with-dependencies.jar /a/a.jar
 
 # Create a new command that is always in the PATH
 RUN echo "#!/bin/sh" > /usr/bin/a && \
 	echo "java \
 		-Dnashorn.args=--no-deprecation-warning \
-		-cp /a/${JARFILE} \
+		-cp /a/a.jar \
 		co.nordlander.a.A \"\$@\"" >> /usr/bin/a && \
 	chmod a+rx /usr/bin/a
 RUN cat /usr/bin/a
