@@ -733,7 +733,10 @@ public abstract class BaseTest {
         String script = "\"msg.body=msg.body.replace('PLACEHOLDER',entry);\"";
 
         String cmdLine = getConnectCommand() + "-" + CMD_PUT + " \"test-PLACEHOLDER\" -" + CMD_BATCH_FILE + " "
-                + batchFile.getAbsolutePath() +  " -" + CMD_TRANSFORM_SCRIPT + " " +  script + " TEST.QUEUE";
+                + batchFile.getAbsolutePath() +  " -" + CMD_TRANSFORM_SCRIPT + " " +  script
+                + " -" + CMD_JMS_TYPE + " foo.jmstype" + " -" + CMD_REPLY_TO + " foo.reply.to"
+                + " -" + CMD_CORRELATION_ID + " foo.corr.id" + " TEST.QUEUE";
+
         System.out.println("Testing cmd: " + cmdLine);
         a.run(cmdLine.split(" "));
 
@@ -741,8 +744,11 @@ public abstract class BaseTest {
         String[] entries = batchContent.split("\\n");
         for (int i=0; i<entries.length; i++) {
             TextMessage msg = (TextMessage) mc.receive(TEST_TIMEOUT);
-            assertNotNull(msg);
+            assertNotNull("A message is expected", msg);
             assertEquals("test-" + entries[i], msg.getText());
+            assertEquals("foo.jmstype", msg.getJMSType());
+            assertNotNull("A reply queue is expected", msg.getJMSReplyTo());
+            assertEquals("foo.corr.id", msg.getJMSCorrelationID());
         }
 
     }

@@ -652,6 +652,33 @@ public class A {
 			outMsg.setBooleanProperty((String) p.getKey(), Boolean.parseBoolean((String)p.getValue()));
 		}
 
+		populateJmsProperties(outMsg, mp);
+
+		boolean useScript = cmdLine.hasOption(CMD_TRANSFORM_SCRIPT);
+		final String script = cmdLine.getOptionValue(CMD_TRANSFORM_SCRIPT);
+		
+		// send multiple messages?
+		if (cmdLine.hasOption("c")) {
+			int count = Integer.parseInt(cmdLine.getOptionValue("c"));
+			for (int i = 0; i < count; i++) {
+				final Message finalMsg = useScript ? transformMessage(outMsg, script) : outMsg;
+				mp.send(finalMsg);
+			}
+			output("", count, " messages sent");
+		} else if (cmdLine.hasOption(CMD_BATCH_FILE)) {
+			if (!useScript) {
+				output("Batch put must be used with script");
+			} else {
+				putBatchMessage(script, cmdLine.getOptionValue(CMD_BATCH_FILE), outMsg, mp);
+			}
+		} else {
+			final Message finalMsg = useScript ? transformMessage(outMsg, script) : outMsg;
+			mp.send(finalMsg);
+		}
+	}
+
+	// Fixed message properties must be parsed and set.
+	private void populateJmsProperties(Message outMsg, MessageProducer mp) throws JMSException {
 		if (cmdLine.hasOption("r")) {
 			outMsg.setJMSReplyTo(createDestination(cmdLine.getOptionValue("r")));
 		}
@@ -685,28 +712,6 @@ public class A {
 		if (cmdLine.hasOption(CMD_JMS_TYPE)) {
 			outMsg.setJMSType(cmdLine.getOptionValue(CMD_JMS_TYPE));
 		}
-		
-		boolean useScript = cmdLine.hasOption(CMD_TRANSFORM_SCRIPT);
-		final String script = cmdLine.getOptionValue(CMD_TRANSFORM_SCRIPT);
-		
-		// send multiple messages?
-		if (cmdLine.hasOption("c")) {
-			int count = Integer.parseInt(cmdLine.getOptionValue("c"));
-			for (int i = 0; i < count; i++) {
-				final Message finalMsg = useScript ? transformMessage(outMsg, script) : outMsg;
-				mp.send(finalMsg);
-			}
-			output("", count, " messages sent");
-		} else if (cmdLine.hasOption(CMD_BATCH_FILE)) {
-			if (!useScript) {
-				output("Batch put must be used with script");
-			} else {
-				putBatchMessage(script, cmdLine.getOptionValue(CMD_BATCH_FILE), outMsg, mp);
-			}
-		} else {
-			final Message finalMsg = useScript ? transformMessage(outMsg, script) : outMsg;
-			mp.send(finalMsg);
-		}
 	}
 
 	private void putBatchMessage(String script, String batchFile, Message outMsg, MessageProducer mp) {
@@ -716,6 +721,7 @@ public class A {
 			for (String line : lines) {
 				transformer.getContext().put("entry", line);
 				final Message finalMsg = transformMessage(outMsg, script);
+				populateJmsProperties(finalMsg, mp);
 				mp.send(finalMsg);
 			}
 			output(lines.length + " messages sent");
