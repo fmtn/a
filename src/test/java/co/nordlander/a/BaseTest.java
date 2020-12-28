@@ -20,13 +20,11 @@ import static co.nordlander.a.A.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -665,9 +663,9 @@ public abstract class BaseTest {
     public void testRestoreDump() throws Exception {
     	// place file where it can be reached by a - that is on file system, not classpath.
     	File dumpFile = tempFolder.newFile("testdump.json");
-    	InputStream jsonStream = BaseTest.class.getClassLoader().getResourceAsStream("testdump.json");
-    	FileUtils.writeByteArrayToFile(dumpFile, IOUtils.toByteArray(jsonStream));
-    	IOUtils.closeQuietly(jsonStream);
+    	try (InputStream jsonStream = BaseTest.class.getClassLoader().getResourceAsStream("testdump.json") ){
+            FileUtils.writeByteArrayToFile(dumpFile, IOUtils.toByteArray(jsonStream));
+        }
     	
     	final String utfText = "Utf-8 Text - 😁";
     	

@@ -53,14 +53,7 @@ import org.apache.activemq.command.DataStructure;
 import org.apache.activemq.command.DestinationInfo;
 import org.apache.activemq.command.ProducerInfo;
 import org.apache.activemq.command.RemoveInfo;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
+import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.AgeFileFilter;
 import org.apache.commons.io.filefilter.AndFileFilter;
@@ -169,7 +162,7 @@ public class A {
 			System.exit(0);
 		}
 
-		CommandLineParser cmdParser = new PosixParser();
+		CommandLineParser cmdParser = new DefaultParser();
 
 		try {
 			cmdLine = cmdParser.parse(opts, args);
@@ -1181,48 +1174,41 @@ public class A {
 				"Read files in folder and put to queue. Sent files are deleted! Specify path and a filename."
 						+" Wildcards are supported '*' and '?'. If no path is given, current directory is assumed.");
 
-		@SuppressWarnings("static-access")
-		Option property = OptionBuilder
-				.withArgName("property=value")
-				.hasArgs(2)
-				.withValueSeparator()
-				.withDescription(
-						"use value for given String property. Can be used several times.")
-				.create(CMD_SET_HEADER);
+
+		Option property = Option.builder(CMD_SET_HEADER)
+				.argName("property=value")
+				.numberOfArgs(2)
+				.valueSeparator()
+				.desc("use value for given String property. Can be used several times.")
+				.build();
 
 		opts.addOption(property);
 
-		@SuppressWarnings("static-access")
-		Option longProperty = OptionBuilder
-				.withArgName("property=value")
-				.hasArgs(2)
-				.withValueSeparator()
-				.withDescription(
-						"use value for given Long property. Can be used several times.")
-				.create(CMD_SET_LONG_HEADER);
+		Option longProperty = Option.builder(CMD_SET_LONG_HEADER)
+				.argName("property=value")
+				.numberOfArgs(2)
+				.valueSeparator()
+				.desc("use value for given Long property. Can be used several times.")
+				.build();
 
 		opts.addOption(longProperty);
 
-		@SuppressWarnings("static-access")
-		Option booleanProperty = OptionBuilder
-				.withArgName("property=value")
-				.hasArgs(2)
-				.withValueSeparator()
-				.withDescription(
-						"use value for given Boolean property. Can be used several times.")
-				.create(CMD_SET_BOOLEAN_HEADER);
+		Option booleanProperty = Option.builder(CMD_SET_BOOLEAN_HEADER)
+				.argName("property=value")
+				.numberOfArgs(2)
+				.valueSeparator()
+				.desc("use value for given Boolean property. Can be used several times.")
+				.build();
 
 		opts.addOption(booleanProperty);
 
-		@SuppressWarnings("static-access")
-		Option intProperty = OptionBuilder
-				.withArgName("property=value")
-				.hasArgs(2)
-				.withValueSeparator()
-				.withDescription(
-						"use value for given Integer property. Can be used several times.")
-				.create(CMD_SET_INT_HEADER);
-				
+		Option intProperty = Option.builder(CMD_SET_INT_HEADER)
+				.argName("property=value")
+				.numberOfArgs(2)
+				.valueSeparator()
+				.desc("use value for given Integer property. Can be used several times.")
+				.build();
+
 		opts.addOption(intProperty);
 		
 		opts.addOption(CMD_WRITE_DUMP, "write-dump", true, "Write a dump of messages to a file. "
