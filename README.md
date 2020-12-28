@@ -234,6 +234,13 @@ Note that the -Djavax parameters has to come before -jar.
 java -Djavax.net.ssl.keyStore=/Users/petter/client.jks -Djavax.net.ssl.keyStorePassword=password -Djavax.net.ssl.trustStore=/Users/petter/truststore.jks -Djavax.net.ssl.trustStorePassword=password -jar a-1.5.0-jar-with-dependencies.jar -b ssl://example.org:61618 MY.QUEUE 
 ```
 
+## Listing queues
+
+Listing queues only works for ActiveMQ 5 brokers with Advisory messages not deactivated. Since the ActiveMQ client get a list of queues async, the functionallity to list queues may not work very well on some systems. Try these things if you think you got bad queue lists for your broker.
+
+1. Add more wait time. Defaults to 50ms but you may need much more. Try add `-w 10000` and check your results.
+2. If you still have problems, try to subscribe to the Advisory manually to check that it works. Something like this: `a -g topic://ActiveMQ.Advisory.Queue -c 0 -w 0`
+
 ## Apply transformations
 
 Using the -S command, a JavaScript transformation can be supplied that will run on each message. The purpose of this feature is to deal with poison-messages that has to be fixed "on-the-fly", removing sensitive data from messages before exporting them from production to a development environment, or to generally help during migrations.
