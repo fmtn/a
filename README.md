@@ -233,7 +233,7 @@ There is a Docker file with the project. You can build a Docker image and use A 
 You can also use prebuilt docker images.
 
 ```bash
-    docker run --rm fmtn/a-util a -p "foobar" q 
+    docker run --rm fmtn/a-util:1.5.0 a -p "foobar" q 
 ```
 
 Please note that you need to pass the entire command to the docker run
