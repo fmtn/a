@@ -207,7 +207,7 @@ public class A {
 		logger.debug("At the end of the road");
 	}
 
-	protected void executeCommandLine(CommandLine cmdLine) throws Exception{
+	protected void executeCommandLine(CommandLine cmdLine) throws JsonParseException,IOException,JMSException,ScriptException{
 		if (cmdLine.hasOption(CMD_GET)) {
 			executeGet(cmdLine);
 		} else if (cmdLine.hasOption(CMD_PUT)) {
