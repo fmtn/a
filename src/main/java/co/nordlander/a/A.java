@@ -368,10 +368,10 @@ public class A {
 			conn = cf.createConnection();
 		}
 		sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-		if (noTransactionSupport == false) { // Some providers cannot create transactional sessions. I.e. Azure Servie Bus
-			tsess = conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
-		} else {
+		if (noTransactionSupport) { // Some providers cannot create transactional sessions. I.e. Azure Service Bus
 			tsess = null;
+		} else {
+			tsess = conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
 		}
 		conn.start();
 	}
