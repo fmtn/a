@@ -36,6 +36,7 @@ import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.jms.Topic;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.script.ScriptException;
@@ -128,6 +129,7 @@ public class A {
 	public static final String CMD_JMS_TYPE = "y";
 	public static final String CMD_TTL = "z";
 	public static final String CMD_CLIENTID = "k";
+	public static final String CMD_DURABLE = "Z";
 	
 	// Various constants
 	public static final long SLEEP_TIME_BETWEEN_FILE_CHECK = 1000L;
@@ -390,13 +392,22 @@ public class A {
 
 	protected void executeGet(final CommandLine cmdLine) throws JMSException,
 			IOException, ScriptException {
-		Destination dest = createDestination(cmdLine.getArgs()[0]);
 		MessageConsumer mq = null;
-		if (cmdLine.hasOption(CMD_SELECTOR)) { // Selectors
-			mq = sess
-					.createConsumer(dest, cmdLine.getOptionValue(CMD_SELECTOR));
+		String name = cmdLine.getArgs()[0];
+		if (cmdLine.hasOption(CMD_DURABLE)) { // Durable
+			Topic dest = createTopic(name);
+			if (cmdLine.hasOption(CMD_SELECTOR)) { // Selectors
+				mq = sess.createDurableSubscriber(dest, cmdLine.getOptionValue(CMD_DURABLE), cmdLine.getOptionValue(CMD_SELECTOR), true);
+			} else {
+				mq = sess.createDurableSubscriber(dest, cmdLine.getOptionValue(CMD_DURABLE));
+			}
 		} else {
-			mq = sess.createConsumer(dest);
+			Destination dest = createDestination(name);
+			if (cmdLine.hasOption(CMD_SELECTOR)) { // Selectors
+				mq = sess.createConsumer(dest, cmdLine.getOptionValue(CMD_SELECTOR));
+			} else {
+				mq = sess.createConsumer(dest);
+			}
 		}
 		int count = Integer.parseInt(cmdLine.getOptionValue(CMD_COUNT,
 				DEFAULT_COUNT_GET));
@@ -797,6 +808,18 @@ public class A {
 		}
 	}
 
+	// Accepts a plain name, topic://<name> etc.
+	protected Topic createTopic(final String name)
+			throws JMSException {
+		// support topic:// as well.
+		final String correctedName = name.replace("topic://", "topic:");
+		if (correctedName.toLowerCase().startsWith("topic:")) {
+			return sess.createTopic(correctedName.substring("topic:".length()));
+		} else {
+			return sess.createTopic(correctedName);
+		}
+	}
+
 	protected void executeBrowse(final CommandLine cmdLine)
 			throws JMSException, IOException {
 		final Queue q = sess.createQueue(cmdLine.getArgs()[0]);
@@ -1179,6 +1202,8 @@ public class A {
 						+" Wildcards are supported '*' and '?'. If no path is given, current directory is assumed.");
 		opts.addOption(CMD_CLIENTID, "clientid", true, "Specify connection ClientID");
 
+		opts.addOption(CMD_DURABLE, "durable", true,
+				"the subscription is durable, specify subscription-name");
 
 		Option property = Option.builder(CMD_SET_HEADER)
 				.argName("property=value")
