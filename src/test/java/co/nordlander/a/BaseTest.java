@@ -476,8 +476,8 @@ public abstract class BaseTest {
 
         MessageConsumer mc = session.createConsumer(testQueue);
         MapMessage msg1 = (MapMessage)mc.receive(TEST_TIMEOUT);
-        assertEquals(msg1.getString("TYPE"), "test");
-        assertEquals(msg1.getInt("ID"), 1);
+        assertEquals("test", msg1.getString("TYPE"));
+        assertEquals(1, msg1.getInt("ID"));
     }
 
     @Test
