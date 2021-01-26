@@ -42,7 +42,7 @@ public class MessageDumpWriter {
 
 	public String messagesToJsonString(List<Message> messages) throws JMSException, JsonProcessingException {
 		
-		List<MessageDump> dumpedMessages = new ArrayList<MessageDump>(messages.size());
+		List<MessageDump> dumpedMessages = new ArrayList<>(messages.size());
 		for( Message message : messages) {
 			dumpedMessages.add(toDumpMessage(message));
 		}
@@ -56,7 +56,7 @@ public class MessageDumpWriter {
 	}
 	
 	public List<MessageDump> toDumpMessages(List<Message> msgs) throws JMSException{
-		List<MessageDump> dump = new ArrayList<MessageDump>();
+		List<MessageDump> dump = new ArrayList<>();
 		for( Message msg : msgs){
 			dump.add(toDumpMessage(msg));
 		}

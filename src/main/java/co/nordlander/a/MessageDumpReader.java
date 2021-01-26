@@ -52,7 +52,7 @@ public class MessageDumpReader {
 
 	public List<Message> loadMessagesFromJson(String json) throws JsonParseException, JsonMappingException, IOException, JMSException{
 		List<MessageDump> msgDumps = toDumpMessages(json);
-		List<Message> messages = new ArrayList<Message>(msgDumps.size());
+		List<Message> messages = new ArrayList<>(msgDumps.size());
 		for(MessageDump dump : msgDumps){
 			messages.add(toJmsMessage(dump));
 		}
