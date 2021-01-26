@@ -143,8 +143,7 @@ public class A {
 		OpenWire, AMQP, ArtemisCore
 	}
 
-	public static void main(String[] args) throws ParseException,
-			InterruptedException {
+	public static void main(String[] args) {
 		A a = new A();
 		try { a.run(args); } catch (Exception e) {
 			e.printStackTrace();
@@ -929,7 +928,7 @@ public class A {
 		}
 	}
 
-	protected void displayAdvisoryMessage(ActiveMQMessage cmdMsg) throws IOException, JMSException {
+	protected void displayAdvisoryMessage(ActiveMQMessage cmdMsg) throws JMSException {
 		final String topic = cmdMsg.getJMSDestination().toString();
 		final String advisoryMsg = advisoryDataStructureToString(cmdMsg.getDataStructure());
 		final String advisoryType = cmdMsg.getDataStructure() != null ? "Type: " + dataStructureTypeToString(cmdMsg.getDataStructure().getDataStructureType()) : "";
