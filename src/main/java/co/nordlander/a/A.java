@@ -1063,7 +1063,7 @@ public class A {
 							.toString() : "Not set"));
 		} catch (JMSException e) {
 			// nothing to do here. just ignore.
-			logger.debug("Cannot print JMS headers." + e.getMessage());
+			logger.debug("Cannot print JMS headers. {}", e.getMessage());
 		}
 	}
 
