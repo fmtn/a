@@ -1070,7 +1070,7 @@ public class A {
 	protected String timestampToString(long timestamp) {
 		Date date = new Date(timestamp);
 		Format format = new SimpleDateFormat(DEFAULT_DATE_FORMAT);
-		String timeString = format.format(date).toString();
+		String timeString = format.format(date);
 		return timeString;
 	}
 
