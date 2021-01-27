@@ -9,88 +9,90 @@ Used to send, browse and put messages on queues.
 [![Build Status](https://github.com/fmtn/a/workflows/Java%20CI%20with%20Maven/badge.svg)](https://github.com/fmtn/a)
 
 ```bash
-usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-B
-       <property=value>] [-b <arg>] [-C <arg>] [-c <arg>] [-E <arg>] [-e
-       <arg>] [-F <arg>] [-f <arg>] [-g] [-H <property=value>] [-I
-       <property=value>] [-i <arg>] [-J <arg>] [-j] [-L <property=value>]
-       [-l] [-M <arg>] [-n] [-O] [-o <arg>] [-P <arg>] [-p <arg>] [-R
-       <arg>] [-r <arg>] [-S <arg>] [-s <arg>] [-T] [-t <arg>] [-U <arg>]
-       [-v] [-w <arg>] [-X <arg>] [-x <arg>] [-y <arg>]
+usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
+       [-B <property=value>] [-c <arg>] [-C <arg>] [-e <arg>] [-E <arg>]
+       [-f <arg>] [-F <arg>] [-g] [-H <property=value>] [-i <arg>] [-I
+       <property=value>] [-j] [-J <arg>] [-k <arg>] [-l] [-L
+       <property=value>] [-M <arg>] [-n] [-o <arg>] [-O] [-p <arg>] [-P
+       <arg>] [-r <arg>] [-R <arg>] [-s <arg>] [-S <arg>] [-t <arg>] [-T]
+       [-U <arg>] [-v] [-w <arg>] [-W <arg>] [-x <arg>] [-X <arg>] [-y
+       <arg>] [-z <arg>]
  -A,--amqp                     Set protocol to AMQP. Defaults to OpenWire
  -a,--artemis-core             Set protocol to ActiveMQ Artemis Core.
                                Defaults to OpenWire
- -B <property=value>           use value for given Boolean property. Can
-                               be used several times.
  -b,--broker <arg>             URL to broker. defaults to:
                                tcp://localhost:61616
- -C,--copy-queue <arg>         Copy all messages from this to target.
-                               Limited by maxBrowsePageSize in broker
-                               settings (default 400).
+ -B <property=value>           use value for given Boolean property. Can
+                               be used several times.
  -c,--count <arg>              A number of messages to browse,get,move or
                                put (put will put the same message <count>
                                times). 0 means all messages.
- -E,--correlation-id <arg>     Set CorrelationID
+ -C,--copy-queue <arg>         Copy all messages from this to target.
+                               Limited by maxBrowsePageSize in broker
+                               settings (default 400).
  -e,--encoding <arg>           Encoding of input file data. Default UTF-8
- -F,--jndi-cf-name <arg>       Specify JNDI name for ConnectionFactory.
-                               Defaults to connectionFactory. Use with -J
+ -E,--correlation-id <arg>     Set CorrelationID
  -f,--find <arg>               Search for messages in queue with this
                                value in payload. Use with browse.
- -g,--get                      Get a message from destination (which delete 
-                                    messages on server queue)
+ -F,--jndi-cf-name <arg>       Specify JNDI name for ConnectionFactory.
+                               Defaults to connectionFactory. Use with -J
+ -g,--get                      Get a message from destination
  -H <property=value>           use value for given String property. Can be
                                used several times.
+ -i,--priority <arg>           sets JMSPriority
  -I <property=value>           use value for given Integer property. Can
                                be used several times.
- -i,--priority <arg>           sets JMSPriority
+ -j,--jms-headers              Print JMS headers
  -J,--jndi <arg>               Connect via JNDI. Overrides -b and -A
                                options. Specify context file on classpath
- -j,--jms-headers              Print JMS headers
- -L <property=value>           use value for given Long property. Can be
-                               used several times.
+ -k,--clientid <arg>           Specify connection ClientID
  -l,--list-queues              List queues and topics on broker (OpenWire
                                only)
+ -L <property=value>           use value for given Long property. Can be
+                               used several times.
  -M,--move-queue <arg>         Move all messages from this to target
  -n,--non-persistent           Set message to non persistent.
- -O,--openwire                 Set protocol to OpenWire. This is default
-                               protocol
  -o,--output <arg>             file to write payload to. If multiple
                                messages, a -1.<ext> will be added to the
                                file. BytesMessage will be written as-is,
                                TextMessage will be written in UTF-8
- -P,--pass <arg>               Password to connect to broker
+ -O,--openwire                 Set protocol to OpenWire. This is default
+                               protocol
  -p,--put <arg>                Put a message. Specify data. if starts with
                                @, a file is assumed and loaded
+ -P,--pass <arg>               Password to connect to broker
+ -r,--reply-to <arg>           Set reply to destination, i.e. queue:reply
  -R,--read-folder <arg>        Read files in folder and put to queue. Sent
                                files are deleted! Specify path and a
                                filename. Wildcards are supported '*' and
                                '?'. If no path is given, current directory
                                is assumed.
- -r,--reply-to <arg>           Set reply to destination, i.e. queue:reply
+ -s,--selector <arg>           Browse or get with selector
  -S,--transform-script <arg>   JavaScript code (or @path/to/file.js). Used
                                to transform messages with the dump
                                options. Access message in JavaScript by
                                msg.JMSType = 'foobar';
- -s,--selector <arg>           Browse or get with selector
+ -t,--type <arg>               Message type to put, [bytes, text, map] -
+                               defaults to text
  -T,--no-transaction-support   Set to disable transactions if not
                                supported by platform. I.e. Azure Service
                                Bus. When set to false, the Move option is
                                NOT atomic.
- -t,--type <arg>               Message type to put, [bytes, text, map] -
-                               defaults to text
  -U,--user <arg>               Username to connect to broker
  -v,--version                  Show version of A
- -W,--batch-file <arg>         Line separated batch file. Used with -p to
-                                produce one message per line in file. Used
-                                together with Script where each batch line
-                                can be accessed with variable 'entry'
  -w,--wait <arg>               Time to wait on get operation. Default 50.
                                0 equals infinity
+ -W,--batch-file <arg>         Line separated batch file. Used with -p to
+                               produce one message per line in file. Used
+                               together with Script where each batch line
+                               can be accessed with variable 'entry'
+ -x,--write-dump <arg>         Write a dump of messages to a file. Will
+                               preserve metadata and type. Can  be used
+                               with transformation option.  Warning! Will
+                               consume queue!
  -X,--restore-dump <arg>       Restore a dump of messages in a
                                file,created with -x. Can be used with
                                transformation option.
- -x,--write-dump <arg>         Write a dump of messages to a file. Will
-                               preserve metadata and type. Can  be used
-                               with transformation option. Warning! Will consume queue!
  -y,--jms-type <arg>           Sets JMSType header
  -z,--ttl <arg>                sets JMSExpiry
 ```
