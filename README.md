@@ -10,9 +10,9 @@ Used to send, browse and put messages on queues.
 
 ```bash
 usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
-       [-B <property=value>] [-c <arg>] [-C <arg>] [-e <arg>] [-E <arg>]
-       [-f <arg>] [-F <arg>] [-g] [-H <property=value>] [-i <arg>] [-I
-       <property=value>] [-j] [-J <arg>] [-k <arg>] [-l] [-L
+       [-B <property=value>] [-c <arg>] [-C <arg>] [-d <arg>] [-e <arg>]
+       [-E <arg>] [-f <arg>] [-F <arg>] [-g] [-H <property=value>] [-i
+       <arg>] [-I <property=value>] [-j] [-J <arg>] [-k <arg>] [-l] [-L
        <property=value>] [-M <arg>] [-n] [-o <arg>] [-O] [-p <arg>] [-P
        <arg>] [-r <arg>] [-R <arg>] [-s <arg>] [-S <arg>] [-t <arg>] [-T]
        [-U <arg>] [-v] [-w <arg>] [-W <arg>] [-x <arg>] [-X <arg>] [-y
@@ -30,6 +30,8 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
  -C,--copy-queue <arg>         Copy all messages from this to target.
                                Limited by maxBrowsePageSize in broker
                                settings (default 400).
+ -d,--durable <arg>            the subscription is durable, specify
+                               subscription-name
  -e,--encoding <arg>           Encoding of input file data. Default UTF-8
  -E,--correlation-id <arg>     Set CorrelationID
  -f,--find <arg>               Search for messages in queue with this
