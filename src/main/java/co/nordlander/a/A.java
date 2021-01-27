@@ -95,6 +95,7 @@ public class A {
 	public static final String CMD_BROKER = "b";
 	public static final String CMD_COPY_QUEUE = "C";
 	public static final String CMD_COUNT = "c";
+	public static final String CMD_DURABLE = "d";
 	public static final String CMD_CORRELATION_ID = "E";
 	public static final String CMD_ENCODING = "e";
 	public static final String CMD_JNDI_CF = "F";
@@ -129,7 +130,6 @@ public class A {
 	public static final String CMD_JMS_TYPE = "y";
 	public static final String CMD_TTL = "z";
 	public static final String CMD_CLIENTID = "k";
-	public static final String CMD_DURABLE = "Z";
 	
 	// Various constants
 	public static final long SLEEP_TIME_BETWEEN_FILE_CHECK = 1000L;
