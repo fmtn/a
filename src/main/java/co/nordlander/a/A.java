@@ -369,7 +369,9 @@ public class A {
 		} else {
 			conn = cf.createConnection();
 		}
-		conn.setClientID(clientid);
+		if(clientid != null) {
+			conn.setClientID(clientid);
+		}
 		sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 		if (noTransactionSupport == false) { // Some providers cannot create transactional sessions. I.e. Azure Servie Bus
 			tsess = conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
