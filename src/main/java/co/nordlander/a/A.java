@@ -143,8 +143,7 @@ public class A {
 		OpenWire, AMQP, ArtemisCore
 	}
 
-	public static void main(String[] args) throws ParseException,
-			InterruptedException {
+	public static void main(String[] args) {
 		A a = new A();
 		try { a.run(args); } catch (Exception e) {
 			e.printStackTrace();
@@ -207,7 +206,7 @@ public class A {
 		logger.debug("At the end of the road");
 	}
 
-	protected void executeCommandLine(CommandLine cmdLine) throws Exception{
+	protected void executeCommandLine(CommandLine cmdLine) throws JsonParseException,IOException,JMSException,ScriptException{
 		if (cmdLine.hasOption(CMD_GET)) {
 			executeGet(cmdLine);
 		} else if (cmdLine.hasOption(CMD_PUT)) {
@@ -368,10 +367,10 @@ public class A {
 			conn = cf.createConnection();
 		}
 		sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-		if (noTransactionSupport == false) { // Some providers cannot create transactional sessions. I.e. Azure Servie Bus
-			tsess = conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
-		} else {
+		if (noTransactionSupport) { // Some providers cannot create transactional sessions. I.e. Azure Service Bus
 			tsess = null;
+		} else {
+			tsess = conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
 		}
 		conn.start();
 	}
@@ -929,7 +928,7 @@ public class A {
 		}
 	}
 
-	protected void displayAdvisoryMessage(ActiveMQMessage cmdMsg) throws IOException, JMSException {
+	protected void displayAdvisoryMessage(ActiveMQMessage cmdMsg) throws JMSException {
 		final String topic = cmdMsg.getJMSDestination().toString();
 		final String advisoryMsg = advisoryDataStructureToString(cmdMsg.getDataStructure());
 		final String advisoryType = cmdMsg.getDataStructure() != null ? "Type: " + dataStructureTypeToString(cmdMsg.getDataStructure().getDataStructureType()) : "";
@@ -1063,14 +1062,14 @@ public class A {
 							.toString() : "Not set"));
 		} catch (JMSException e) {
 			// nothing to do here. just ignore.
-			logger.debug("Cannot print JMS headers." + e.getMessage());
+			logger.debug("Cannot print JMS headers. {}", e.getMessage());
 		}
 	}
 
 	protected String timestampToString(long timestamp) {
 		Date date = new Date(timestamp);
 		Format format = new SimpleDateFormat(DEFAULT_DATE_FORMAT);
-		String timeString = format.format(date).toString();
+		String timeString = format.format(date);
 		return timeString;
 	}
 
