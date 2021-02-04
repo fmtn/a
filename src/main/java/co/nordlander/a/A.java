@@ -127,6 +127,7 @@ public class A {
 	public static final String CMD_WRITE_DUMP = "x";
 	public static final String CMD_JMS_TYPE = "y";
 	public static final String CMD_TTL = "z";
+	public static final String CMD_CLIENTID = "k";
 	
 	// Various constants
 	public static final long SLEEP_TIME_BETWEEN_FILE_CHECK = 1000L;
@@ -181,6 +182,7 @@ public class A {
 					cmdLine.getOptionValue(CMD_USER),
 					cmdLine.getOptionValue(CMD_PASS), protocol,
 					cmdLine.getOptionValue(CMD_JNDI, ""),
+					cmdLine.getOptionValue(CMD_CLIENTID),
 					cmdLine.hasOption(CMD_NO_TRANSACTION_SUPPORT));
 
 			long startTime = System.currentTimeMillis();
@@ -317,7 +319,7 @@ public class A {
 	}
 
 	protected void connect(String url, String user, String password,
-			Protocol protocol, String jndi, boolean noTransactionSupport) throws Exception {
+			Protocol protocol, String jndi, String clientid, boolean noTransactionSupport) throws Exception {
 		if (StringUtils.isBlank(jndi)) {
 			switch (protocol) {
 			case AMQP:
@@ -365,6 +367,9 @@ public class A {
 			conn = cf.createConnection(user, password);
 		} else {
 			conn = cf.createConnection();
+		}
+		if(clientid != null) {
+			conn.setClientID(clientid);
 		}
 		sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 		if (noTransactionSupport) { // Some providers cannot create transactional sessions. I.e. Azure Service Bus
@@ -1172,6 +1177,7 @@ public class A {
 		opts.addOption(CMD_READ_FOLDER, "read-folder", true, 
 				"Read files in folder and put to queue. Sent files are deleted! Specify path and a filename."
 						+" Wildcards are supported '*' and '?'. If no path is given, current directory is assumed.");
+		opts.addOption(CMD_CLIENTID, "clientid", true, "Specify connection ClientID");
 
 
 		Option property = Option.builder(CMD_SET_HEADER)
