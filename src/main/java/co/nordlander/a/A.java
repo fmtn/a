@@ -199,6 +199,10 @@ public class A {
 					sess.close();
 				}
 
+				if (tsess != null) {
+					tsess.close();
+				}
+
 				if (conn != null) {
 					conn.close();
 				}
