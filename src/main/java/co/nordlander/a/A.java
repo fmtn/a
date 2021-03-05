@@ -812,7 +812,7 @@ public class A {
 	protected Topic createTopic(final String name)
 			throws JMSException {
 		// support topic:// as well.
-		final String correctedName = name.replace("topic://", "topic:");
+		final String correctedName = name.replaceFirst("^topic://", "topic:");
 		if (correctedName.toLowerCase().startsWith("topic:")) {
 			return sess.createTopic(correctedName.substring("topic:".length()));
 		} else {
