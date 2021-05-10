@@ -1,0 +1,36 @@
+version: 2
+updates:
+- package-ecosystem: maven
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "04:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: org.springframework:spring-test
+    versions:
+    - 5.3.5
+  - dependency-name: org.springframework:spring-tx
+    versions:
+    - 5.3.5
+  - dependency-name: org.springframework:spring-jms
+    versions:
+    - 5.3.5
+  - dependency-name: org.springframework:spring-context
+    versions:
+    - 5.3.5
+  - dependency-name: org.springframework:spring-context-support
+    versions:
+    - 5.3.5
+  - dependency-name: org.springframework:spring-aop
+    versions:
+    - 5.3.5
+  - dependency-name: org.springframework:spring-beans
+    versions:
+    - 5.3.5
+  - dependency-name: org.springframework:spring-expression
+    versions:
+    - 5.3.5
+  - dependency-name: org.springframework:spring-core
+    versions:
+    - 5.3.5
