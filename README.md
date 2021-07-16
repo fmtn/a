@@ -104,7 +104,7 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
 ActiveMQ 5 is limited how many messages can be browsed/read from a queue without consuming them.
 This is limited by the setting - maxBrowsePageSize in broker, default is 400. This is a server side setting! This makes it impossible to use browse and copy commands for more than 400 or whatever value is configured at a time. Increasing this value may affect broker memory consumption. For other JMS compliant brokers, this limit may not exists or other limits may apply instead.
 
-## Exampels
+## Examples
 
 Example 1. Put message with payload "foobar" to queue q on local broker:
 
