@@ -93,6 +93,8 @@ public abstract class BaseTest {
 
     @Before
     public void setupJMS() throws Exception {
+        System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
+
         cf = getConnectionFactory();
         connection = cf.createConnection();
         session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);

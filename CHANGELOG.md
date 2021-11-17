@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Durable subscriptions (by @erwindon)
 - Option to add client id
+- #105 changed Nashorn javascript engine to GraalVM JS.
 
 ## [1.5.0]
 ### Removed 
