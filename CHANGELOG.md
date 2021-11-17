@@ -4,7 +4,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [unreleased]
+## [1.5.1]
+
+### Fixed
+- #102 Spring updated to 5.3.13
+- #97 Jackson-databind updated to 2.13.3
+- #99 Artemis updated to 2.19
+- #103 logback-classic updated to 1.2.7
+- #82 jdeb updated to 1.9
+- #86 commons-io updated to 2.11.0
+- #101 commons-cli updated to 1.5.0
+- #93 activemq updated to 5.16.3
+- #62 Code quality fix (by @erwindon)
+- jboss-logmanager updated to 2.1.18.Final
+- #58 fix queue name when prefix queue: or queue:// is used (by @erwindon)
+
+### Changed
+- Durable subscriptions (by @erwindon)
+- Option to add client id
 
 ## [1.5.0]
 ### Removed 
@@ -60,7 +77,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - #21 Object properties that cannot be deserialized are now siently ignored. This gives better support for Azure Service Bus.
 
-## [1.4.2] - 2017-12-02
+## [1.4.2] - 2017-12-02
 
 ### Changed
 - #18 The start script in distribution does no longer need to be edited, just put on path in the same folder as the jar-filer. Suggestion from @kutzi
