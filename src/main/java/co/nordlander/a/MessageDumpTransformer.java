@@ -40,7 +40,7 @@ public class MessageDumpTransformer {
 	
 	
 	protected ScriptEngineManager mgr = new ScriptEngineManager();
-	protected ScriptEngine engine = mgr.getEngineByName("JavaScript");
+	protected ScriptEngine engine = mgr.getEngineByName("js");
 	protected Map<String, Object> context = new TreeMap<>();
 	
 	public MessageDump transformMessage(MessageDump msg, String script) throws ScriptException, IOException{
