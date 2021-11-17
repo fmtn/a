@@ -93,7 +93,6 @@ public abstract class BaseTest {
 
     @Before
     public void setupJMS() throws Exception {
-        System.setProperty("polyglot.js.nashorn-compat", "true");
         System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
 
         cf = getConnectionFactory();

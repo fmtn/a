@@ -147,7 +147,6 @@ public class A {
 	}
 
 	public static void main(String[] args) {
-		System.setProperty("polyglot.js.nashorn-compat", "true");
 		System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
 		A a = new A();
 		try { a.run(args); } catch (Exception e) {

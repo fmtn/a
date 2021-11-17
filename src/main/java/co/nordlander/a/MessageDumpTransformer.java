@@ -22,10 +22,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Predicate;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
+import javax.script.*;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -39,9 +38,19 @@ import org.apache.commons.lang3.StringUtils;
 public class MessageDumpTransformer {
 	
 	
-	protected ScriptEngineManager mgr = new ScriptEngineManager();
-	protected ScriptEngine engine = mgr.getEngineByName("js");
+	protected ScriptEngineManager mgr;
+	protected ScriptEngine engine;
+	protected Bindings bindings;
 	protected Map<String, Object> context = new TreeMap<>();
+
+	public MessageDumpTransformer(){
+		mgr = new ScriptEngineManager();
+		engine = mgr.getEngineByName("js");
+		bindings = engine.getBindings(ScriptContext.ENGINE_SCOPE);
+		bindings.put("polyglot.js.nashorn-compat", true);
+		bindings.put("polyglot.js.allowHostAccess", true);
+		bindings.put("polyglot.js.allowHostClassLookup", (Predicate<String>) s -> true);
+	}
 	
 	public MessageDump transformMessage(MessageDump msg, String script) throws ScriptException, IOException{
 		if (StringUtils.isBlank(script)) {
@@ -71,9 +80,9 @@ public class MessageDumpTransformer {
 	}
 	   
 	protected MessageDump doTransformMessage(MessageDump msg, String script) throws ScriptException{
-		engine.put("msg", msg);
+		bindings.put("msg", msg);
 		for (Map.Entry<String, Object> entry : context.entrySet() ) {
-			engine.put(entry.getKey(), entry.getValue());
+			bindings.put(entry.getKey(), entry.getValue());
 		}
 		engine.eval(script);
 		return msg;
