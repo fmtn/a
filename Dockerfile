@@ -1,5 +1,5 @@
 # -- Build time image --
-FROM maven:3.6.3-openjdk-8-slim AS build
+FROM maven:3.8.3-openjdk-8-slim AS build
 
 LABEL maintainer="petter@fourmation.se"
 
