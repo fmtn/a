@@ -1170,9 +1170,9 @@ public class A {
 		opts.addOption(CMD_MOVE_QUEUE, "move-queue", true,
 				"Move all messages from this to target");
 		opts.addOption(CMD_FIND, "find", true,
-				"Search for messages in queue with this value in payload. Use with browse.");
+				"Search for messages in queue with this value in payload. Use with browse. Limited by maxBrowsePageSize in broker settings (default 400).");
 		opts.addOption(CMD_SELECTOR, "selector", true,
-				"Browse or get with selector");
+				"Browse or get with selector. I.e JMSType = 'car' AND color = 'blue'");
 		opts.addOption(CMD_WAIT, "wait", true,
 				"Time to wait on get operation. Default 50. 0 equals infinity");
 		opts.addOption(CMD_USER, "user", true, "Username to connect to broker");
