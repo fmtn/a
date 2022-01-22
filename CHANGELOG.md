@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.5.2]
+
+### Fixed
+- #106 jdeb updated to 1.10
+- #110 jackson-databind updated to 2.13.1
+- #112 logback-classic updated to 1.2.10
+- #113 maven-compiler-plugin updated to 3.9.0  
+- #114 spring updated to 5.3.15
+- #115 graalvm js updated to 22.0.0
+- #116 graalvm js-scriptengine updated to 22.0.0
+
 ## [1.5.1]
 
 ### Fixed
