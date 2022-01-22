@@ -46,6 +46,7 @@ under the License.
       <large-messages-directory>./target/data/large-messages</large-messages-directory>
 
       <journal-min-files>10</journal-min-files>
+      <max-disk-usage>100</max-disk-usage>
 
       <!--
        This value was determined through a calculation.
