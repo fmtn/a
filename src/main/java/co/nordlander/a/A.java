@@ -135,7 +135,7 @@ public class A {
 	public static final long SLEEP_TIME_BETWEEN_FILE_CHECK = 1000L;
 	public static final String DEFAULT_COUNT_GET = "1";
 	public static final String DEFAULT_COUNT_ALL = "0";
-	public static final String DEFAULT_WAIT = "50";
+	public static final String DEFAULT_WAIT = "100";
 	public static final String TYPE_TEXT = "text";
 	public static final String TYPE_BYTES = "bytes";
 	public static final String TYPE_MAP = "map";
@@ -1177,7 +1177,7 @@ public class A {
 		opts.addOption(CMD_SELECTOR, "selector", true,
 				"Browse or get with selector. I.e JMSType = 'car' AND color = 'blue'");
 		opts.addOption(CMD_WAIT, "wait", true,
-				"Time to wait on get or move operation. Default 50. 0 equals infinity");
+				"Time to wait on get or move operation. Default 100. 0 equals infinity");
 		opts.addOption(CMD_USER, "user", true, "Username to connect to broker");
 		opts.addOption(CMD_PASS, "pass", true, "Password to connect to broker");
 		opts.addOption(CMD_PRIORITY, "priority", true, "sets JMSPriority");
