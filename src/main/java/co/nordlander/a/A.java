@@ -258,10 +258,13 @@ public class A {
 		}
 		int count = Integer.parseInt(cmdLine.getOptionValue(CMD_COUNT,
 				DEFAULT_COUNT_ALL));
+		long wait = Long.parseLong(cmdLine.getOptionValue(CMD_WAIT,
+				DEFAULT_WAIT));
 		int j = 0;
 		while (j < count || count == 0) {
-			Message msg = mq.receive(100L);
+			Message msg = mq.receive(wait);
 			if (msg == null) {
+				output("No message received, due to the timeout expiring or the consumer is closed");
 				break;
 			} else {
 				sendWithOptionalTransformer(cmdLine, msg, mp);
@@ -1174,7 +1177,7 @@ public class A {
 		opts.addOption(CMD_SELECTOR, "selector", true,
 				"Browse or get with selector. I.e JMSType = 'car' AND color = 'blue'");
 		opts.addOption(CMD_WAIT, "wait", true,
-				"Time to wait on get operation. Default 50. 0 equals infinity");
+				"Time to wait on get or move operation. Default 50. 0 equals infinity");
 		opts.addOption(CMD_USER, "user", true, "Username to connect to broker");
 		opts.addOption(CMD_PASS, "pass", true, "Password to connect to broker");
 		opts.addOption(CMD_PRIORITY, "priority", true, "sets JMSPriority");
