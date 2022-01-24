@@ -1177,7 +1177,7 @@ public class A {
 		opts.addOption(CMD_SELECTOR, "selector", true,
 				"Browse or get with selector. I.e JMSType = 'car' AND color = 'blue'");
 		opts.addOption(CMD_WAIT, "wait", true,
-				"Time to wait on get or move operation. Default 100. 0 equals infinity");
+				"Time to wait for a message on get or move operations in milliseconds. Default 100. 0 equals infinity");
 		opts.addOption(CMD_USER, "user", true, "Username to connect to broker");
 		opts.addOption(CMD_PASS, "pass", true, "Password to connect to broker");
 		opts.addOption(CMD_PRIORITY, "priority", true, "sets JMSPriority");
