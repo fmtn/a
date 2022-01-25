@@ -82,8 +82,9 @@ usage: java -jar a-<version>-with-dependencies.jar [-A] [-a] [-b <arg>]
                                NOT atomic.
  -U,--user <arg>               Username to connect to broker
  -v,--version                  Show version of A
- -w,--wait <arg>               Time to wait on get operation. Default 50.
-                               0 equals infinity
+ -w,--wait <arg>               Time to wait for a message on get or move 
+                               operations in milliseconds. Default 100. 
+                               0 equals infinity.
  -W,--batch-file <arg>         Line separated batch file. Used with -p to
                                produce one message per line in file. Used
                                together with Script where each batch line
