@@ -4,6 +4,7 @@
 *.jar
 *.war
 *.ear
+*.deb
 
 target
 .project
@@ -11,3 +12,5 @@ target
 .idea
 *.iml
 .DS_Store
+
+src/deb/fmtn-a/usr
