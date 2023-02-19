@@ -238,7 +238,7 @@ There is a Docker file with the project. You can build a Docker image and use A 
 You can also use prebuilt docker images.
 
 ```bash
-    docker run --rm fmtn/a-util:1.5.2 a -p "foobar" q 
+    docker run --rm fmtn/a-util:1.6.0 a -p "foobar" q 
 ```
 
 Please note that you need to pass the entire command to the docker run
@@ -251,7 +251,7 @@ Given you have a truststore and a keystore in JKS format, you can edit your a st
 Note that the -Djavax parameters has to come before -jar.
 
 ```bash
-java -Djavax.net.ssl.keyStore=/Users/petter/client.jks -Djavax.net.ssl.keyStorePassword=password -Djavax.net.ssl.trustStore=/Users/petter/truststore.jks -Djavax.net.ssl.trustStorePassword=password -jar a-1.5.2-jar-with-dependencies.jar -b ssl://example.org:61618 MY.QUEUE 
+java -Djavax.net.ssl.keyStore=/Users/petter/client.jks -Djavax.net.ssl.keyStorePassword=password -Djavax.net.ssl.trustStore=/Users/petter/truststore.jks -Djavax.net.ssl.trustStorePassword=password -jar a-1.6.0-jar-with-dependencies.jar -b ssl://example.org:61618 MY.QUEUE 
 ```
 
 ## Listing queues
