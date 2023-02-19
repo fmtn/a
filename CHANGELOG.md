@@ -7,8 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [1.6.0]
 
 ### Fixed
-- #142 java updated to 11
-- #142 updated procedure to create DEB package
+- #142 java updated to 11 (by @erwindon)
+- #142 updated procedure to create DEB package (by @erwindon)
 
 ## [1.5.2]
 
