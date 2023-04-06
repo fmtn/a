@@ -1,5 +1,5 @@
 # -- Build time image --
-FROM maven:3.8.6-openjdk-11-slim AS build
+FROM maven:3-eclipse-temurin-17 AS build
 
 LABEL maintainer="petter@fourmation.se"
 
@@ -24,7 +24,7 @@ RUN sed --in-place \
 RUN cd /usr/local/a && mvn package -DskipTests
 
 # -- Runtime Image --
-FROM openjdk:8-alpine
+FROM eclipse-temurin:17
 
 COPY --from=build /usr/local/a/target/*-jar-with-dependencies.jar /a/a.jar
 
