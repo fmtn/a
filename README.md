@@ -248,10 +248,16 @@ The default hostname has been replaced with `host.docker.internal` as the origin
 ## Use SSL
 
 Given you have a truststore and a keystore in JKS format, you can edit your a start script, or run it manually like this.
-Note that the -Djavax parameters has to come before -jar.
+Note that the -Djavax parameters has to come before -jar. This applies to OpenWire connections:
 
 ```bash
 java -Djavax.net.ssl.keyStore=/Users/petter/client.jks -Djavax.net.ssl.keyStorePassword=password -Djavax.net.ssl.trustStore=/Users/petter/truststore.jks -Djavax.net.ssl.trustStorePassword=password -jar a-1.6.0-jar-with-dependencies.jar -b ssl://example.org:61618 MY.QUEUE 
+```
+
+For AMQP based connections, you need to provide the keystore in the URL instead, like this.
+
+```bash
+java -jar -Djavax.net.debug=ssl:keymanager:sslcontext a-1.6.0-jar-with-dependencies.jar -A -b "amqp://broker:5671?ssl=true&ssl-cert-alias=myalias&trust-store=client.ts&trust-store-password=password&key-store=client.ks&key-store-password=password" -p "foo" bar
 ```
 
 ## Listing queues
